@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <a href="{{ url_for('chat_list') }}" class="btn btn-outline-secondary btn-sm me-3">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <div class="user-avatar me-3">
+                        {{ other_user.username[0] }}
+                    </div>
+                    <div>
+                        <h5 class="mb-0">{{ other_user.username }}</h5>
+                        {% if other_user.profile %}
+                        <small class="text-muted">{{ other_user.profile.title }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div id="chat-messages" class="chat-messages mb-3" style="height: 400px; overflow-y: auto;">
+                    {% for message in messages %}
+                    <div class="message mb-3 {% if message.sender_id == current_user.id %}message-outgoing{% else %}message-incoming{% endif %}">
+                        <div class="d-flex {% if message.sender_id == current_user.id %}justify-content-end{% endif %}">
+                            {% if message.sender_id != current_user.id %}
+                            <div class="user-avatar me-2" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                {{ other_user.username[0] }}
+                            </div>
+                            {% endif %}
+                            <div class="message-content {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %} rounded p-3">
+                                <p class="mb-1">{{ message.content }}</p>
+                                <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
+                                    {{ message.created_at.strftime('%H:%M') }}
+                                </small>
+                            </div>
+                            {% if message.sender_id == current_user.id %}
+                            <div class="user-avatar ms-2" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                {{ current_user.username[0] }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <form id="message-form">
+                    <div class="input-group">
+                        <input type="text" id="message-input" class="form-control" placeholder="Введите сообщение..." required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-messages {
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.message-content {
+    max-width: 70%;
+}
+
+.message-incoming .message-content {
+    border-bottom-left-radius: 0;
+}
+
+.message-outgoing .message-content {
+    border-bottom-right-radius: 0;
+}
+</style>
+
+<script>
+document.getElementById('message-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const messageInput = document.getElementById('message-input');
+    const content = messageInput.value.trim();
+
+    if (content) {
+        // Здесь будет отправка сообщения через AJAX
+        alert('Сообщение отправлено: ' + content);
+        messageInput.value = '';
+
+        // Прокрутка вниз
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
+
+// Автопрокрутка при загрузке
+window.addEventListener('load', function() {
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+</script>
+{% endblock %}

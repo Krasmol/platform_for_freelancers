@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Заголовок и кнопка -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="fw-bold">Найдите свой идеальный проект</h1>
+        <p class="text-muted">Просматривайте актуальные задачи от заказчиков</p>
+    </div>
+    {% if current_user.is_authenticated and current_user.is_client %}
+        <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Создать проект
+        </a>
+    {% endif %}
+</div>
+
+<!-- Поиск и фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-bold">Поиск проектов</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" name="search"
+                           placeholder="Название проекта, описание..." value="{{ request.args.get('search', '') }}">
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Категория</label>
+                <select class="form-select" name="category">
+                    <option value="">Все категории</option>
+                    <option value="Разработка" {% if request.args.get('category') == 'Разработка' %}selected{% endif %}>💻 Разработка</option>
+                    <option value="Дизайн" {% if request.args.get('category') == 'Дизайн' %}selected{% endif %}>🎨 Дизайн</option>
+                    <option value="Маркетинг" {% if request.args.get('category') == 'Маркетинг' %}selected{% endif %}>📈 Маркетинг</option>
+                    <option value="Тексты" {% if request.args.get('category') == 'Тексты' %}selected{% endif %}>✍️ Тексты</option>
+                    <option value="Консультация" {% if request.args.get('category') == 'Консультация' %}selected{% endif %}>💬 Консультация</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel me-2"></i>Найти
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Статистика поиска -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">
+        Найдено проектов: <strong>{{ projects|length }}</strong>
+    </span>
+    <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-sort-down me-2"></i>Сортировка
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">По дате (новые)</a></li>
+            <li><a class="dropdown-item" href="#">По бюджету (высокий)</a></li>
+            <li><a class="dropdown-item" href="#">По релевантности</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Список проектов -->
+{% if projects %}
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-xl-4 col-lg-6 mb-4">
+            <div class="card project-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <!-- Заголовок и бюджет -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary">
+                            {{ project.category }}
+                        </span>
+                        <div class="text-end">
+                            <div class="h5 text-success mb-0">{{ project.budget }} ₽</div>
+                            <small class="text-muted">бюджет</small>
+                        </div>
+                    </div>
+
+                    <!-- Название и описание -->
+                    <h5 class="card-title">{{ project.title }}</h5>
+                    <p class="card-text text-muted flex-grow-1">
+                        {{ project.description[:150] }}{% if project.description|length > 150 %}...{% endif %}
+                    </p>
+
+                    <!-- Навыки -->
+                    {% if project.skills_required %}
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold">Требуются:</small>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            {% for skill in project.skills_required.split(',')[:3] %}
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-tag me-1"></i>{{ skill.strip() }}
+                                </span>
+                            {% endfor %}
+                            {% if project.skills_required.split(',')|length > 3 %}
+                                <span class="badge bg-light text-dark border">
+                                    +{{ project.skills_required.split(',')|length - 3 }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Футер карточки -->
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar me-2" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                                {{ project.client.username[0] }}
+                            </div>
+                            <div>
+                                <small class="d-block fw-bold">{{ project.client.username }}</small>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>{{ project.created_at.strftime('%d.%m.%Y') }}
+                                </small>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-primary btn-sm">
+                            Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <!-- Нет проектов -->
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-inbox display-1 text-muted"></i>
+        </div>
+        <h3 class="text-muted">Проекты не найдены</h3>
+        <p class="text-muted mb-4">Попробуйте изменить параметры поиска или создать свой проект</p>
+        {% if current_user.is_authenticated and current_user.is_client %}
+            <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Создать первый проект
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+
+<!-- Пагинация (заглушка) -->
+{% if projects %}
+<nav aria-label="Page navigation" class="mt-5">
+    <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+            <a class="page-link" href="#">Предыдущая</a>
+        </li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item">
+            <a class="page-link" href="#">Следующая</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

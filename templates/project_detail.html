@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Основной контент -->
+    <div class="col-lg-8">
+        <!-- Заголовок и статус -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="badge bg-{% if project.status == 'open' %}success{% else %}secondary{% endif %} me-2 fs-6">
+                            {{ '🔓 Открыт' if project.status == 'open' else '🔒 Закрыт' }}
+                        </span>
+                        <span class="badge bg-primary fs-6">{{ project.category }}</span>
+                    </div>
+                    <div class="text-end">
+                        <h2 class="text-success mb-0">{{ project.budget }} ₽</h2>
+                        <small class="text-muted">Бюджет проекта</small>
+                    </div>
+                </div>
+
+                <h1 class="fw-bold mb-4">{{ project.title }}</h1>
+
+                <!-- Информация о заказчике -->
+                <div class="d-flex align-items-center mb-4 p-3 bg-light rounded">
+                    <div class="user-avatar me-3">
+                        {{ project.client.username[0] }}
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">{{ project.client.username }}</h6>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>Опубликован {{ project.created_at.strftime('%d.%m.%Y в %H:%M') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Описание проекта -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="fw-bold mb-4">
+                    <i class="bi bi-file-text text-primary me-2"></i>Описание проекта
+                </h4>
+                <div class="project-description">
+                    {{ project.description|replace('\n', '<br>')|safe }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Требуемые навыки -->
+        {% if project.skills_required %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4 class="fw-bold mb-4">
+                    <i class="bi bi-tools text-primary me-2"></i>Требуемые навыки
+                </h4>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for skill in project.skills_required.split(',') %}
+                        <span class="badge bg-primary px-3 py-2 fs-6">
+                            <i class="bi bi-check-circle me-1"></i>{{ skill.strip() }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Боковая панель -->
+    <div class="col-lg-4">
+        <!-- Действия -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Действия</h5>
+
+                {% if current_user.is_authenticated %}
+                    {% if not current_user.is_client and project.status == 'open' %}
+                        <form method="POST" action="{{ url_for('respond_to_project', project_id=project.id) }}">
+                            <button type="submit" class="btn btn-primary w-100 mb-2 py-2">
+                                <i class="bi bi-envelope me-2"></i>📨 Откликнуться на проект
+                            </button>
+                        </form>
+                        <small class="text-muted d-block text-center mb-3">
+                            После отклика откроется чат с заказчиком
+                        </small>
+                    {% endif %}
+
+                    {% if current_user.id == project.client_id %}
+                        <button class="btn btn-outline-primary w-100 mb-2" onclick="alert('Редактирование в разработке')">
+                            <i class="bi bi-pencil me-2"></i>✏️ Редактировать проект
+                        </button>
+                        <button class="btn btn-outline-danger w-100" onclick="alert('Закрытие в разработке')">
+                            <i class="bi bi-lock me-2"></i>🔒 Закрыть проект
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center">
+                        <p class="text-muted mb-3">Войдите чтобы откликнуться на проект</p>
+                        <a href="{{ url_for('login') }}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-plus me-2"></i>Регистрация
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Информация о проекте -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Информация о проекте</h5>
+
+                <div class="info-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted">Статус:</span>
+                        <span class="badge bg-{% if project.status == 'open' %}success{% else %}secondary{% endif %}">
+                            {{ 'Открыт' if project.status == 'open' else 'Закрыт' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted">Категория:</span>
+                        <strong>{{ project.category }}</strong>
+                    </div>
+                </div>
+
+                <div class="info-item mb-3">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="text-muted">Бюджет:</span>
+                        <strong class="text-success">{{ project.budget }} ₽</strong>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span class="text-muted">Опубликован:</span>
+                        <strong>{{ project.created_at.strftime('%d.%m.%Y') }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Заказчик -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Заказчик</h5>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="user-avatar me-3">
+                        {{ project.client.username[0] }}
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">{{ project.client.username }}</h6>
+                        <small class="text-muted">Зарегистрирован {{ project.client.created_at.strftime('%d.%m.%Y') }}</small>
+                    </div>
+                </div>
+                {% if project.client.profile %}
+                <div class="mt-3">
+                    <small class="text-muted">О заказчике:</small>
+                    <p class="small mb-0">{{ project.client.profile.description[:100] }}{% if project.client.profile.description|length > 100 %}...{% endif %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.project-description {
+    line-height: 1.6;
+    font-size: 1.1rem;
+}
+
+.project-description br {
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.info-item {
+    transition: background-color 0.2s;
+}
+
+.info-item:hover {
+    background-color: rgba(0,0,0,0.02);
+    border-radius: 5px;
+    margin-left: -5px;
+    margin-right: -5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+</style>
+{% endblock %}
