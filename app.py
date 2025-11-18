@@ -18,7 +18,7 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Пожалуйста, войдите в систему'
 
 
-# Модели (оставляем без изменений)
+# Модели
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
@@ -37,6 +37,14 @@ class User(UserMixin, db.Model):
                                         lazy='dynamic')
     support_tickets = db.relationship('SupportTicket', backref='user', lazy='dynamic')
     ticket_messages = db.relationship('TicketMessage', backref='user', lazy='dynamic')
+
+    favorite_projects = db.relationship('Project', secondary='favorites', backref='favorited_by')
+
+    favorites = db.Table('favorites',
+                         db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                         db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+                         db.Column('created_at', db.DateTime, default=lambda: datetime.now(timezone.utc))
+                         )
 
 
 class Profile(db.Model):
@@ -105,18 +113,26 @@ class TicketMessage(db.Model):
     is_admin_response = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+    reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    rating = db.Column(db.Integer)  # 1-5 stars
+    comment = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 
-# Функция для запроса уведомлений
+# функция для запроса уведомлений
 def notifications_query(user_id):
     return Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).limit(5).all()
 
 
-# Контекстный процессор
+# контекстный процессор
 @app.context_processor
 def utility_processor():
     def get_category_icon(category):
@@ -170,7 +186,7 @@ def utility_processor():
     )
 
 
-# Основные маршруты
+# основные маршруты
 @app.route('/')
 def index():
     projects = Project.query.filter_by(status='open').order_by(Project.created_at.desc()).limit(6).all()
@@ -347,7 +363,7 @@ def project_detail(project_id):
     return render_template('project_detail.html', project=project)
 
 
-# ОТКЛИК НА ПРОЕКТ - ИСПРАВЛЕННАЯ ВЕРСИЯ
+# отклик на проект
 @app.route('/project/<int:project_id>/respond', methods=['POST'])
 @login_required
 def respond_to_project(project_id):
@@ -357,7 +373,7 @@ def respond_to_project(project_id):
 
     project = Project.query.get_or_404(project_id)
 
-    # Проверяем, не откликался ли уже пользователь
+    # проверка не откликался ли уже
     existing_message = Message.query.filter_by(
         sender_id=current_user.id,
         receiver_id=project.client_id
@@ -367,7 +383,7 @@ def respond_to_project(project_id):
         flash('Вы уже откликались на этот проект')
         return redirect(url_for('project_detail', project_id=project_id))
 
-    # Создаем первое сообщение
+    # первое сообщение
     first_message = Message(
         sender_id=current_user.id,
         receiver_id=project.client_id,
@@ -375,7 +391,7 @@ def respond_to_project(project_id):
     )
     db.session.add(first_message)
 
-    # Создаем уведомление для владельца проекта
+    # уведомление для владельца
     response_notification = Notification(
         user_id=project.client_id,
         title='Новый отклик на ваш проект!',
@@ -391,7 +407,7 @@ def respond_to_project(project_id):
     return redirect(url_for('chat_list', user_id=project.client_id))
 
 
-# Система уведомлений
+# уведомления
 @app.route('/notifications')
 @login_required
 def notifications():
@@ -430,14 +446,14 @@ def mark_all_notifications_read():
     return redirect(url_for('notifications'))
 
 
-# ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЧАТОВ
+# функция чатов
 def get_user_chats(user_id):
-    """Получает список чатов для пользователя"""
-    # Находим всех пользователей, с которыми есть переписка
+    """список чатов"""
+    # поиск пользователей с кем уже есть чат
     sent_messages = Message.query.filter_by(sender_id=user_id).all()
     received_messages = Message.query.filter_by(receiver_id=user_id).all()
 
-    # Собираем ID всех пользователей, с которыми есть переписка
+    # id пользователей с чатов
     chat_user_ids = set()
 
     for msg in sent_messages:
@@ -459,7 +475,7 @@ def get_user_chats(user_id):
                     )
                 ).order_by(Message.created_at.desc()).first()
 
-                # Считаем непрочитанные сообщения
+                # непрочитанные сообщения
                 unread_count = Message.query.filter_by(
                     sender_id=chat_user_id,
                     receiver_id=user_id,
@@ -472,13 +488,13 @@ def get_user_chats(user_id):
                     'unread_count': unread_count
                 })
 
-    # Сортируем по дате последнего сообщения
+    # сортировка по последнему сообщению
     chats.sort(key=lambda x: x['last_message'].created_at if x['last_message'] else datetime.min, reverse=True)
     return chats
 
 
 def get_chat_messages(user1_id, user2_id):
-    """Получает сообщения между двумя пользователями"""
+    """получение сообщений между двумя пользователями"""
     return Message.query.filter(
         db.or_(
             db.and_(Message.sender_id == user1_id, Message.receiver_id == user2_id),
@@ -487,7 +503,7 @@ def get_chat_messages(user1_id, user2_id):
     ).order_by(Message.created_at.asc()).all()
 
 
-# СИСТЕМА ЧАТОВ - ИСПРАВЛЕННАЯ
+# система чатов
 @app.route('/chats')
 @login_required
 def chat_list():
@@ -538,7 +554,7 @@ def send_message():
     )
     db.session.add(message)
 
-    # Создаем уведомление для получателя
+    # уведомление для получателя
     notification = Notification(
         user_id=receiver_id,
         title='Новое сообщение',
@@ -562,17 +578,17 @@ def send_message():
 @app.route('/api/check_new_messages')
 @login_required
 def check_new_messages():
-    """Проверяет новые сообщения для текущего пользователя"""
+    """новое сообщение для пользователя"""
     last_check = request.args.get('last_check', type=float)
 
     if last_check:
-        # Ищем сообщения, созданные после последней проверки
+        # новые сообщения после проверки
         new_messages = Message.query.filter(
             Message.receiver_id == current_user.id,
             Message.created_at > datetime.fromtimestamp(last_check, timezone.utc)
         ).order_by(Message.created_at.desc()).all()
 
-        # Ищем новые уведомления
+        # новые уведомления
         new_notifications = Notification.query.filter(
             Notification.user_id == current_user.id,
             Notification.created_at > datetime.fromtimestamp(last_check, timezone.utc)
@@ -588,7 +604,7 @@ def check_new_messages():
 
     return jsonify({'current_time': time.time()})
 
-# Система поддержки (оставляем без изменений)
+# система поддержки
 @app.route('/support')
 @login_required
 def support():
@@ -622,7 +638,7 @@ def create_support_ticket():
         db.session.add(ticket)
         db.session.commit()
 
-        # Создаем первое сообщение в тикете
+        # новое сообщение в тикете
         ticket_message = TicketMessage(
             ticket_id=ticket.id,
             user_id=current_user.id,
@@ -631,7 +647,7 @@ def create_support_ticket():
         )
         db.session.add(ticket_message)
 
-        # Уведомление для модераторов
+        # уведомление для админа
         moderators = User.query.filter_by(is_moderator=True).all()
         for moderator in moderators:
             moderator_notification = Notification(
@@ -643,7 +659,7 @@ def create_support_ticket():
             )
             db.session.add(moderator_notification)
 
-        # Уведомление для пользователя
+        # уведомление для пользователя
         user_notification = Notification(
             user_id=current_user.id,
             title='Обращение в поддержку создано',
@@ -665,7 +681,7 @@ def create_support_ticket():
 def support_ticket(ticket_id):
     ticket = SupportTicket.query.get_or_404(ticket_id)
 
-    # Проверяем доступ
+    # проверка доступа
     if ticket.user_id != current_user.id and not current_user.is_moderator:
         flash('Доступ запрещен')
         return redirect(url_for('support'))
@@ -685,7 +701,7 @@ def reply_support_ticket(ticket_id):
         flash('Введите сообщение')
         return redirect(url_for('support_ticket', ticket_id=ticket_id))
 
-    # Проверяем доступ
+    # проверка доступа
     if ticket.user_id != current_user.id and not current_user.is_moderator:
         flash('Доступ запрещен')
         return redirect(url_for('support'))
@@ -698,15 +714,15 @@ def reply_support_ticket(ticket_id):
     )
     db.session.add(ticket_message)
 
-    # Обновляем статус тикета
+    # обновляем тикет
     if current_user.is_moderator and ticket.status == 'open':
         ticket.status = 'in_progress'
 
     ticket.updated_at = datetime.now(timezone.utc)
 
-    # Уведомление для другой стороны
+    # уведомление для другой стороны
     if current_user.is_moderator:
-        # Уведомление для пользователя
+        # уведомление для пользователя
         notification = Notification(
             user_id=ticket.user_id,
             title='Новый ответ от поддержки',
@@ -716,7 +732,7 @@ def reply_support_ticket(ticket_id):
         )
         db.session.add(notification)
     else:
-        # Уведомление для модераторов
+        # уведомление для модераторов
         moderators = User.query.filter_by(is_moderator=True).all()
         for moderator in moderators:
             notification = Notification(
@@ -739,7 +755,7 @@ def reply_support_ticket(ticket_id):
 def close_support_ticket(ticket_id):
     ticket = SupportTicket.query.get_or_404(ticket_id)
 
-    # Проверяем доступ
+    # проверка доступа
     if ticket.user_id != current_user.id and not current_user.is_moderator:
         flash('Доступ запрещен')
         return redirect(url_for('support'))
@@ -752,7 +768,7 @@ def close_support_ticket(ticket_id):
     return redirect(url_for('support_ticket', ticket_id=ticket_id))
 
 
-# Панель администратора
+# панель модера
 @app.route('/admin')
 @login_required
 def admin_dashboard():
@@ -760,7 +776,7 @@ def admin_dashboard():
         flash('Доступ запрещен')
         return redirect(url_for('index'))
 
-    # Получаем ВСЕ обращения (не только открытые)
+    # все обращения
     all_tickets = SupportTicket.query.order_by(desc(SupportTicket.created_at)).all()
     open_tickets = [t for t in all_tickets if t.status in ['open', 'in_progress']]
     closed_tickets = [t for t in all_tickets if t.status == 'closed']
@@ -814,12 +830,12 @@ def admin_ticket_detail(ticket_id):
 
 
 def init_db():
-    """Инициализация базы данных - ТОЛЬКО модератор"""
+    """инициализация базы данных"""
     with app.app_context():
         db.drop_all()
         db.create_all()
 
-        # Создаем ТОЛЬКО модератора
+        # логин и пароль модера
         moderator = User(
             username='moderator',
             email='moderator@test.ru',
@@ -843,4 +859,4 @@ def init_db():
 if __name__ == '__main__':
     if not os.path.exists('instance/freelance.db'):
         init_db()
-    app.run(debug=True)
+    app.run(debug=True, port=5001, host='0.0.0.0')
