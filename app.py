@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import os
 import time
 from sqlalchemy import desc
@@ -17,6 +19,11 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Пожалуйста, войдите в систему'
 
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 # Модели
 class User(UserMixin, db.Model):
@@ -534,8 +541,8 @@ def chat_list():
                            time=time)
 
 
-@app.route('/api/send_message', methods=['POST'])
-@login_required
+@app.route('/send_message', methods=['POST'])
+@limiter.limit("5 per minute")
 def send_message():
     receiver_id = request.json.get('receiver_id')
     content = request.json.get('content')
