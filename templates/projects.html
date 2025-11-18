@@ -41,6 +41,25 @@
                 </select>
             </div>
 
+            <!-- Дополнительные фильтры -->
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Бюджет</label>
+                <select class="form-select" name="budget_filter">
+                    <option value="">Любой бюджет</option>
+                    <option value="0-5000">до 5,000 ₽</option>
+                    <option value="5000-20000">5,000 - 20,000 ₽</option>
+                    <option value="20000+">от 20,000 ₽</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Сортировка</label>
+                <select class="form-select" name="sort">
+                    <option value="newest">Сначала новые</option>
+                    <option value="budget_high">По убыванию бюджета</option>
+                    <option value="budget_low">По возрастанию бюджета</option>
+                </select>
+            </div>
+
             <div class="col-md-3">
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="bi bi-funnel me-2"></i>Найти
