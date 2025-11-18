@@ -2,6 +2,8 @@
 
 {% block content %}
 <!-- Герой секция -->
+<!-- В файле templates/index.html -->
+<!-- Герой секция -->
 <section class="hero-section">
     <div class="container">
         <h1 class="display-4 fw-bold mb-4">Найдите идеальные проекты или талантливых исполнителей</h1>
@@ -17,6 +19,21 @@
             </a>
         </div>
         {% endif %}
+        <div class="mt-5 pt-4 border-top">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-code-slash me-1"></i>
+                        Разработано <strong>Krasmol</strong>
+                    </small>
+                    <div class="mt-2">
+                        <a href="https://github.com/Krasmol" class="btn btn-sm btn-outline-secondary" target="_blank">
+                            <i class="bi bi-github me-1"></i>GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -135,6 +152,11 @@
         </div>
     </div>
     {% endfor %}
+</div>
+
+<!-- В hero-section после основного контента -->
+<div class="mt-4">
+    <small class="text-muted">Разработано с ❤️ [Krasmol]</small>
 </div>
 
 <div class="text-center mt-4">
