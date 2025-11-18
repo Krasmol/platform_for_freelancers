@@ -226,6 +226,11 @@ python app.py
 Также создайте файл `requirements.txt` если его еще нет:
 
 
+## 👨‍💻 Разработчик
+
+- 💼 GitHub: [@Krasmol](https://github.com/Krasmol)
+
+
 Flask==2.3.3
 Flask-SQLAlchemy==3.0.5
 Flask-Login==0.6.3
