@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-5">
+                    <div class="feature-icon mx-auto">
+                        <i class="bi bi-plus-circle"></i>
+                    </div>
+                    <h2 class="fw-bold mt-3">Создать новый проект</h2>
+                    <p class="text-muted">Опишите вашу задачу и найдите идеального исполнителя</p>
+                </div>
+
+                <form method="POST">
+                    <!-- Основная информация -->
+                    <div class="mb-4">
+                        <label for="title" class="form-label fw-bold">
+                            <i class="bi bi-chat-square-text text-primary me-2"></i>Название проекта
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="title" name="title"
+                               placeholder="Например: Разработка веб-сайта для компании" required>
+                        <div class="form-text">Кратко опишите суть проекта</div>
+                    </div>
+
+                    <!-- Описание -->
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-bold">
+                            <i class="bi bi-file-text text-primary me-2"></i>Подробное описание
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="6"
+                                  placeholder="Опишите детали проекта, требования, сроки и ожидаемый результат..." required></textarea>
+                        <div class="form-text">Чем подробнее описание, тем больше подходящих откликов вы получите</div>
+                    </div>
+
+                    <!-- Бюджет и категория -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="budget" class="form-label fw-bold">
+                                <i class="bi bi-currency-dollar text-success me-2"></i>Бюджет (руб.)
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">₽</span>
+                                <input type="number" class="form-control" id="budget" name="budget"
+                                       min="0" placeholder="5000" required>
+                            </div>
+                            <div class="form-text">Укажите реалистичный бюджет для вашего проекта</div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="category" class="form-label fw-bold">
+                                <i class="bi bi-grid text-primary me-2"></i>Категория
+                            </label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Выберите категорию</option>
+                                <option value="Разработка">💻 Разработка</option>
+                                <option value="Дизайн">🎨 Дизайн</option>
+                                <option value="Маркетинг">📈 Маркетинг</option>
+                                <option value="Тексты">✍️ Тексты</option>
+                                <option value="Консультация">💬 Консультация</option>
+                                <option value="Администрирование">⚙️ Администрирование</option>
+                                <option value="Другое">🔧 Другое</option>
+                            </select>
+                            </div>
+                    </div>
+
+
+
+
+                    <!-- Навыки -->
+                    <!-- Технологии -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-cpu text-primary me-2"></i>Технологии и языки программирования
+                        </label>
+
+    <!-- Frontend -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <strong>🌐 Frontend</strong>
+                            </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technologies" value="HTML/CSS" id="html">
+                                                <label class="form-check-label" for="html">
+                                                    HTML/CSS
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technologies" value="JavaScript" id="js">
+                                                <label class="form-check-label" for="js">
+                                                    JavaScript
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technologies" value="React" id="react">
+                                                <label class="form-check-label" for="react">
+                                                    React
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technologies" value="Vue.js" id="vue">
+                                                <label class="form-check-label" for="vue">
+                                                    Vue.js
+                                                </label>
+                                        </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technologies" value="Angular" id="angular">
+                                                <label class="form-check-label" for="angular">
+                                                    Angular
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technologies" value="TypeScript" id="ts">
+                                                <label class="form-check-label" for="ts">
+                                                    TypeScript
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="technologies" value="Bootstrap" id="bootstrap">
+                                                <label class="form-check-label" for="bootstrap">
+                                                    Bootstrap
+                                                </label>
+                                            </div
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                        <!-- Backend -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <strong>⚙️ Backend</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Python" id="python">
+                                            <label class="form-check-label" for="python">
+                                                Python
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Django" id="django">
+                                            <label class="form-check-label" for="django">
+                                                Django
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Flask" id="flask">
+                                            <label class="form-check-label" for="flask">
+                                                Flask
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Node.js" id="node">
+                                            <label class="form-check-label" for="node">
+                                                Node.js
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="PHP" id="php">
+                                            <label class="form-check-label" for="php">
+                                                PHP
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Laravel" id="laravel">
+                                            <label class="form-check-label" for="laravel">
+                                                Laravel
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Java" id="java">
+                                            <label class="form-check-label" for="java">
+                                                Java
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Spring" id="spring">
+                                            <label class="form-check-label" for="spring">
+                                                Spring
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Базы данных -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <strong>🗄️ Базы данных</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="MySQL" id="mysql">
+                                            <label class="form-check-label" for="mysql">
+                                                MySQL
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="PostgreSQL" id="postgres">
+                                            <label class="form-check-label" for="postgres">
+                                                PostgreSQL
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="MongoDB" id="mongo">
+                                            <label class="form-check-label" for="mongo">
+                                                MongoDB
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="SQLite" id="sqlite">
+                                            <label class="form-check-label" for="sqlite">
+                                                SQLite
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Мобильная разработка -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <strong>📱 Мобильная разработка</strong>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="React Native" id="react_native">
+                                            <label class="form-check-label" for="react_native">
+                                                React Native
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Flutter" id="flutter">
+                                            <label class="form-check-label" for="flutter">
+                                                Flutter
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Swift" id="swift">
+                                            <label class="form-check-label" for="swift">
+                                                Swift (iOS)
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="technologies" value="Kotlin" id="kotlin">
+                                            <label class="form-check-label" for="kotlin">
+                                                Kotlin (Android)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Другие навыки -->
+                        <div class="mb-3">
+                            <label for="skills_required" class="form-label fw-bold">
+                                <i class="bi bi-tools text-primary me-2"></i>Другие навыки
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-tags"></i>
+                                </span>
+                                <input type="text" class="form-control" id="skills_required" name="skills_required"
+                                       placeholder="UI/UX Design, Figma, Photoshop, DevOps...">
+                            </div>
+                            <div class="form-text">Дополнительные навыки, не вошедшие в списки выше</div>
+                        </div>
+                    </div>
+
+                    <!-- Дополнительные настройки -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-gear text-primary me-2"></i>Дополнительные настройки
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="urgent" checked>
+                                        <label class="form-check-label" for="urgent">
+                                            🚀 Срочный проект
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="remote" checked>
+                                        <label class="form-check-label" for="remote">
+                                            🌍 Удаленная работа
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('projects') }}" class="btn btn-outline-secondary me-md-2 px-4">
+                            <i class="bi bi-arrow-left me-2"></i>Отмена
+                        </a>
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-rocket me-2"></i>Опубликовать проект
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Советы -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-lightbulb text-warning me-2"></i>Советы для успешного проекта
+                </h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Четко опишите задачу и требования</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Укажите реалистичный бюджет</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Определите сроки выполнения</li>
+                    <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Укажите необходимые навыки</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

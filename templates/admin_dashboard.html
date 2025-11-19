@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="fw-bold mb-0">
+                        <i class="bi bi-shield-check text-primary me-2"></i>Панель модератора
+                    </h2>
+                    <div class="badge bg-primary fs-6">Модератор</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика модерации -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_users }}</h4>
+                        <p class="mb-0">Пользователей</p>
+                    </div>
+                    <i class="bi bi-people display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_projects }}</h4>
+                        <p class="mb-0">Проектов</p>
+                    </div>
+                    <i class="bi bi-briefcase display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.open_tickets }}</h4>
+                        <p class="mb-0">Активных обращений</p>
+                    </div>
+                    <i class="bi bi-flag display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_tickets }}</h4>
+                        <p class="mb-0">Всего обращений</p>
+                    </div>
+                    <i class="bi bi-inbox display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Быстрые действия -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Быстрые действия</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('admin_tickets') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-inbox me-2"></i>Все обращения
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('admin_tickets') }}?status=open" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-flag me-2"></i>Активные обращения
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('admin_tickets') }}?status=closed" class="btn btn-outline-success w-100">
+                            <i class="bi bi-check-circle me-2"></i>Закрытые обращения
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Последние обращения -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Последние обращения</h5>
+                    <a href="{{ url_for('admin_tickets') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-arrow-right me-1"></i>Все обращения
+                    </a>
+                </div>
+
+                {% if recent_tickets %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Тема</th>
+                                <th>Пользователь</th>
+                                <th>Статус</th>
+                                <th>Приоритет</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in recent_tickets %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('admin_ticket_detail', ticket_id=ticket.id) }}" class="text-decoration-none fw-bold">
+                                        {{ ticket.subject }}
+                                    </a>
+                                </td>
+                                <td>{{ ticket.user.username }}</td>
+                                <td>
+                                    <span class="badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                        {% if ticket.status == 'open' %}Открыт
+                                        {% elif ticket.status == 'in_progress' %}В работе
+                                        {% elif ticket.status == 'resolved' %}Решен
+                                        {% else %}Закрыт{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if ticket.priority == 'low' %}success{% elif ticket.priority == 'medium' %}warning{% elif ticket.priority == 'high' %}danger{% else %}dark{% endif %}">
+                                        {{ ticket.priority }}
+                                    </span>
+                                </td>
+                                <td class="text-muted">{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('admin_ticket_detail', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox display-4 mb-3"></i>
+                    <h5>Обращений пока нет</h5>
+                    <p>Здесь будут отображаться обращения пользователей в поддержку</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Боковая панель -->
+    <div class="col-lg-4">
+        <!-- Статистика обращений -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Статистика обращений</h5>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Всего:</span>
+                        <strong>{{ stats.total_tickets }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Активные:</span>
+                        <strong>{{ stats.open_tickets }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Закрытые:</span>
+                        <strong>{{ stats.closed_tickets }}</strong>
+                    </div>
+                    <div class="card">
+                        <div class="card-body text-center py-3">
+                            <small class="text-muted d-block mb-1">Разработчик</small>
+                            <strong class="d-block mb-2">Krasmol</strong>
+                            <a href="https://github.com/Krasmol" class="btn btn-sm btn-outline-dark" target="_blank">
+                                <i class="bi bi-github me-1"></i>GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Активность -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Последние действия</h5>
+                <div class="activity-list">
+                    {% for ticket in recent_tickets[:3] %}
+                    <div class="activity-item mb-3">
+                        <div class="d-flex">
+                            <div class="activity-icon bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% else %}success{% endif %} rounded-circle p-2 me-3">
+                                <i class="bi bi-flag text-white"></i>
+                            </div>
+                            <div>
+                                <p class="mb-1">Обращение от {{ ticket.user.username }}</p>
+                                <small class="text-muted">{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not recent_tickets %}
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-info-circle"></i>
+                        <p class="mb-0 small">Нет recent activity</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<script>
+// Автообновление страницы каждые 30 секунд для модератора
+setTimeout(() => {
+    window.location.reload();
+}, 30000);
+</script>
+{% endblock %}
