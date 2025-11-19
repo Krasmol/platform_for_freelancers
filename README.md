@@ -249,7 +249,6 @@ python -c "from app import migrate_database; migrate_database()"
 
 **Krasmol**
 GitHub: [@Krasmol](https://github.com/Krasmol)
-Email: sherlockfoxlie@gmail.com
 
 <div align="center">
 
