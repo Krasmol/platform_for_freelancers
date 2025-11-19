@@ -3,11 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 import os
 import time
-from sqlalchemy import desc
+from sqlalchemy import desc, text
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-123'
@@ -19,14 +17,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Пожалуйста, войдите в систему'
 
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    storage_uri="redis://localhost:6379",
-    default_limits=["200 per day", "50 per hour"]
-)
-
-# Модели
+# модели
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
@@ -38,21 +29,11 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     profile = db.relationship('Profile', backref='user', uselist=False)
-    projects = db.relationship('Project', backref='client', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
     sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy='dynamic')
-    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver',
-                                        lazy='dynamic')
+    received_messages = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver', lazy='dynamic')
     support_tickets = db.relationship('SupportTicket', backref='user', lazy='dynamic')
     ticket_messages = db.relationship('TicketMessage', backref='user', lazy='dynamic')
-
-    favorite_projects = db.relationship('Project', secondary='favorites', backref='favorited_by')
-
-    favorites = db.Table('favorites',
-                         db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                         db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-                         db.Column('created_at', db.DateTime, default=lambda: datetime.now(timezone.utc))
-                         )
 
 
 class Profile(db.Model):
@@ -73,10 +54,44 @@ class Project(db.Model):
     budget = db.Column(db.Float)
     category = db.Column(db.String(100))
     skills_required = db.Column(db.String(500))
+    technologies = db.Column(db.String(500))
     status = db.Column(db.String(20), default='open')
     client_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    freelancer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    completed_at = db.Column(db.DateTime, nullable=True)
+
+    client = db.relationship('User', foreign_keys=[client_id], backref='created_projects')
+    freelancer = db.relationship('User', foreign_keys=[freelancer_id], backref='assigned_projects')
+
+    # связь с фрилансером
+    freelancer = db.relationship('User', foreign_keys=[freelancer_id], backref='assigned_projects')
+
+class ProjectResponse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    freelancer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    message = db.Column(db.Text)
+    proposed_budget = db.Column(db.Float)
+    status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+    project = db.relationship('Project', backref='responses')
+    freelancer = db.relationship('User', foreign_keys=[freelancer_id], backref='project_responses')
+
+    def reject(self):
+        """отклонить отклик"""
+        self.status = 'rejected'
+
+        # уведомление фрилансеру
+        notification = Notification(
+            user_id=self.freelancer_id,
+            title='Отклик отклонен',
+            message=f'Ваш отклик на проект "{self.project.title}" был отклонен.',
+            notification_type='project_response',
+            related_id=self.project.id
+        )
+        db.session.add(notification)
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -121,13 +136,19 @@ class TicketMessage(db.Model):
     is_admin_response = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
-    reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    rating = db.Column(db.Integer)  # 1-5 stars
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Кто оставляет отзыв
+    freelancer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Кого оценивают
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
     comment = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    project = db.relationship('Project', backref='reviews')
+    reviewer = db.relationship('User', foreign_keys=[reviewer_id], backref='given_reviews')
+    freelancer = db.relationship('User', foreign_keys=[freelancer_id], backref='received_reviews')
 
 
 @login_manager.user_loader
@@ -138,6 +159,13 @@ def load_user(user_id):
 # функция для запроса уведомлений
 def notifications_query(user_id):
     return Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).limit(5).all()
+
+
+def get_freelancer_rating(freelancer_id):
+    reviews = Review.query.filter_by(freelancer_id=freelancer_id).all()
+    if not reviews:
+        return 0
+    return sum(review.rating for review in reviews) / len(reviews)
 
 
 # контекстный процессор
@@ -184,13 +212,20 @@ def utility_processor():
             return Message.query.filter_by(receiver_id=current_user.id, is_read=False).count()
         return 0
 
+    def get_freelancer_rating(freelancer_id):
+        reviews = Review.query.filter_by(freelancer_id=freelancer_id).all()
+        if not reviews:
+            return 0
+        return sum(review.rating for review in reviews) / len(reviews)
+
     return dict(
         get_category_icon=get_category_icon,
         get_unread_notifications_count=get_unread_notifications_count,
         get_notification_icon=get_notification_icon,
         get_notification_color=get_notification_color,
-        notifications_query=notifications_query,
-        get_unread_messages_count=get_unread_messages_count
+        get_unread_messages_count=get_unread_messages_count,  # ← ДОБАВЬТЕ ЗАПЯТУЮ ЗДЕСЬ
+        get_freelancer_rating=get_freelancer_rating,
+        notifications_query=notifications_query
     )
 
 
@@ -199,6 +234,157 @@ def utility_processor():
 def index():
     projects = Project.query.filter_by(status='open').order_by(Project.created_at.desc()).limit(6).all()
     return render_template('index.html', projects=projects)
+
+
+@app.route('/profile/<int:user_id>')
+@login_required
+def user_profile(user_id):
+    """Просмотр профиля другого пользователя"""
+    user = User.query.get_or_404(user_id)
+
+    # Не позволяем смотреть свой же профиль через этот маршрут
+    if user.id == current_user.id:
+        return redirect(url_for('view_profile'))
+
+    if user.is_client:
+        # Для заказчика
+        user_projects_active = Project.query.filter(
+            Project.client_id == user.id,
+            Project.status.in_(['open', 'in_progress'])
+        ).order_by(Project.created_at.desc()).limit(10).all()
+
+        user_projects_completed = Project.query.filter(
+            Project.client_id == user.id,
+            Project.status == 'completed'
+        ).order_by(Project.completed_at.desc()).limit(10).all()
+
+        total_budget = sum(project.budget for project in user_projects_completed)
+
+        client_reviews = Review.query.join(Project).filter(
+            Project.client_id == user.id
+        ).all()
+        client_rating = sum(review.rating for review in client_reviews) / len(client_reviews) if client_reviews else 0
+
+        return render_template('user_profile.html',
+                               user=user,
+                               user_projects_active=user_projects_active,
+                               user_projects_completed=user_projects_completed,
+                               total_budget=total_budget,
+                               client_rating=client_rating)
+    else:
+        # Для фрилансера
+        freelancer_projects_active = Project.query.filter(
+            Project.freelancer_id == user.id,
+            Project.status == 'in_progress'
+        ).order_by(Project.created_at.desc()).limit(10).all()
+
+        freelancer_projects_completed = Project.query.filter(
+            Project.freelancer_id == user.id,
+            Project.status == 'completed'
+        ).order_by(Project.completed_at.desc()).limit(10).all()
+
+        freelancer_reviews = Review.query.filter_by(
+            freelancer_id=user.id
+        ).order_by(Review.created_at.desc()).all()
+
+        return render_template('user_profile.html',
+                               user=user,
+                               freelancer_projects_active=freelancer_projects_active,
+                               freelancer_projects_completed=freelancer_projects_completed,
+                               freelancer_reviews=freelancer_reviews,
+                               get_freelancer_rating=get_freelancer_rating)
+
+@app.route('/project/<int:project_id>/review', methods=['GET', 'POST'])
+@login_required
+def create_review(project_id):
+    project = Project.query.get_or_404(project_id)
+
+    # Проверяем, что пользователь - заказчик и проект завершен
+    if current_user.id != project.client_id:
+        flash('Только заказчик может оставить отзыв')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    if project.status != 'completed':
+        flash('Можно оставить отзыв только для завершенных проектов')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    # Проверяем, что отзыв еще не оставлен
+    existing_review = Review.query.filter_by(project_id=project_id, reviewer_id=current_user.id).first()
+    if existing_review:
+        flash('Вы уже оставили отзыв по этому проекту')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    if request.method == 'POST':
+        rating = request.form.get('rating')
+        comment = request.form.get('comment')
+
+        review = Review(
+            project_id=project_id,
+            reviewer_id=current_user.id,
+            freelancer_id=project.freelancer_id,
+            rating=int(rating),
+            comment=comment
+        )
+        db.session.add(review)
+
+        # Уведомление фрилансеру
+        notification = Notification(
+            user_id=project.freelancer_id,
+            title='Новый отзыв!',
+            message=f'Заказчик оставил отзыв по проекту "{project.title}"',
+            notification_type='review',
+            related_id=project.id
+        )
+        db.session.add(notification)
+
+        db.session.commit()
+
+        flash('✅ Отзыв успешно оставлен!')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    return render_template('create_review.html', project=project)
+
+
+# Функция для получения среднего рейтинга фрилансера
+def get_freelancer_rating(freelancer_id):
+    reviews = Review.query.filter_by(freelancer_id=freelancer_id).all()
+    if not reviews:
+        return 0
+    return sum(review.rating for review in reviews) / len(reviews)
+
+@app.route('/project/<int:project_id>/reject_response/<int:response_id>')
+@login_required
+def reject_project_response(project_id, response_id):
+    project = Project.query.get_or_404(project_id)
+    response = ProjectResponse.query.get_or_404(response_id)
+
+    # проверяем что текущий пользователь - владелец проекта
+    if project.client_id != current_user.id:
+        flash('Доступ запрещен')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    # отклоняем отклик
+    response.status = 'rejected'
+
+    # уведомление фрилансеру
+    notification = Notification(
+        user_id=response.freelancer_id,
+        title='Отклик отклонен',
+        message=f'Ваш отклик на проект "{project.title}" был отклонен.',
+        notification_type='project_response',
+        related_id=project.id
+    )
+    db.session.add(notification)
+
+    db.session.commit()
+
+    flash('❌ Отклик отклонен')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+@app.route('/about')
+def about():
+    """Страница "О проекте" """
+    return render_template('about.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -223,20 +409,54 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        # ТОЛЬКО одно приветственное уведомление для нового пользователя
-        welcome_notification = Notification(
-            user_id=user.id,
-            title='Добро пожаловать на FreelanceHub!',
-            message='Спасибо за регистрацию. Заполните свой профиль, чтобы начать работу.',
-            notification_type='system'
-        )
-        db.session.add(welcome_notification)
-        db.session.commit()
-
-        flash('Регистрация успешна! Войдите в систему')
-        return redirect(url_for('login'))
+        # Для фрилансеров - редирект на создание профиля
+        if user_type == 'freelancer':
+            flash('Регистрация успешна! Заполните ваш профиль фрилансера.')
+            login_user(user)
+            return redirect(url_for('create_profile'))
+        else:
+            # Для заказчиков - сразу на главную
+            flash('Регистрация успешна! Теперь вы можете создавать проекты.')
+            login_user(user)
+            return redirect(url_for('index'))
 
     return render_template('register.html')
+
+@app.route('/debug/user')
+@login_required
+def debug_user():
+    """Страница для отладки информации о пользователе"""
+    user_info = {
+        'id': current_user.id,
+        'username': current_user.username,
+        'email': current_user.email,
+        'is_client': current_user.is_client,
+        'is_moderator': current_user.is_moderator,
+        'is_active': current_user.is_active,
+        'created_at': current_user.created_at
+    }
+    return jsonify(user_info)
+
+
+def create_moderator_if_needed():
+    """Создает модератора если его нет"""
+    with app.app_context():
+        moderator = User.query.filter_by(email='moderator@test.ru').first()
+        if not moderator:
+            moderator = User(
+                username='moderator',
+                email='moderator@test.ru',
+                is_moderator=True
+            )
+            moderator.password_hash = generate_password_hash('moderator123')
+            db.session.add(moderator)
+            db.session.commit()
+            print("✅ Создан новый модератор: moderator@test.ru / moderator123")
+        else:
+            # Обновляем права существующего модератора
+            moderator.is_moderator = True
+            db.session.commit()
+            print("✅ Права модератора обновлены")
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -303,22 +523,74 @@ def create_profile():
 @app.route('/profile')
 @login_required
 def view_profile():
-    if not current_user.profile:
+    # Для фрилансеров без профиля - редирект на создание
+    if not current_user.is_client and not current_user.profile:
         return redirect(url_for('create_profile'))
 
-    user_projects = []
     if current_user.is_client:
-        user_projects = Project.query.filter_by(client_id=current_user.id).order_by(Project.created_at.desc()).all()
+        # Для заказчика
+        user_projects_active = Project.query.filter(
+            Project.client_id == current_user.id,
+            Project.status.in_(['open', 'in_progress'])
+        ).order_by(Project.created_at.desc()).all()
 
-    return render_template('view_profile.html', user_projects=user_projects)
+        user_projects_completed = Project.query.filter(
+            Project.client_id == current_user.id,
+            Project.status == 'completed'
+        ).order_by(Project.completed_at.desc()).all()
+
+        # Статистика заказчика
+        total_budget = sum(project.budget for project in user_projects_completed)
+
+        # Рейтинг заказчика (из отзывов фрилансеров)
+        client_reviews = Review.query.join(Project).filter(
+            Project.client_id == current_user.id
+        ).all()
+        client_rating = sum(review.rating for review in client_reviews) / len(client_reviews) if client_reviews else 0
+
+        return render_template('view_profile.html',
+                               user_projects_active=user_projects_active,
+                               user_projects_completed=user_projects_completed,
+                               total_budget=total_budget,
+                               client_rating=client_rating)
+    else:
+        # Для фрилансера (старый код)
+        freelancer_projects_active = Project.query.filter(
+            Project.freelancer_id == current_user.id,
+            Project.status == 'in_progress'
+        ).order_by(Project.created_at.desc()).all()
+
+        freelancer_projects_completed = Project.query.filter(
+            Project.freelancer_id == current_user.id,
+            Project.status == 'completed'
+        ).order_by(Project.completed_at.desc()).all()
+
+        freelancer_reviews = Review.query.filter_by(
+            freelancer_id=current_user.id
+        ).order_by(Review.created_at.desc()).all()
+
+        return render_template('view_profile.html',
+                               freelancer_projects_active=freelancer_projects_active,
+                               freelancer_projects_completed=freelancer_projects_completed,
+                               freelancer_reviews=freelancer_reviews,
+                               get_freelancer_rating=get_freelancer_rating)
 
 
 @app.route('/projects')
 def projects():
     category = request.args.get('category')
     search = request.args.get('search')
+    status_filter = request.args.get('status', 'open')  # Новый фильтр
 
-    query = Project.query.filter_by(status='open')
+    query = Project.query
+
+    # фильтр по статусу
+    if status_filter == 'open':
+        query = query.filter_by(status='open')
+    elif status_filter == 'in_progress':
+        query = query.filter_by(status='in_progress')
+    elif status_filter == 'completed':
+        query = query.filter_by(status='completed')
 
     if category:
         query = query.filter(Project.category.contains(category))
@@ -326,7 +598,7 @@ def projects():
         query = query.filter(Project.title.contains(search) | Project.description.contains(search))
 
     projects = query.order_by(Project.created_at.desc()).all()
-    return render_template('projects.html', projects=projects)
+    return render_template('projects.html', projects=projects, status_filter=status_filter)
 
 
 @app.route('/projects/create', methods=['GET', 'POST'])
@@ -371,6 +643,125 @@ def project_detail(project_id):
     return render_template('project_detail.html', project=project)
 
 
+# принять отклик
+@app.route('/project/<int:project_id>/accept_response/<int:response_id>')
+@login_required
+def accept_project_response(project_id, response_id):
+    project = Project.query.get_or_404(project_id)
+    response = ProjectResponse.query.get_or_404(response_id)
+
+    # проверяем что текущий пользователь - владелец проекта
+    if project.client_id != current_user.id:
+        flash('Доступ запрещен')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    # назначаем фрилансера и меняем статус проекта
+    project.freelancer_id = response.freelancer_id
+    project.status = 'in_progress'
+    response.status = 'accepted'
+
+    # отклоняем остальные отклики
+    other_responses = ProjectResponse.query.filter_by(project_id=project_id).filter(
+        ProjectResponse.id != response_id
+    ).all()
+
+    for other_response in other_responses:
+        other_response.status = 'rejected'
+        # уведомление другим фрилансерам
+        notification = Notification(
+            user_id=other_response.freelancer_id,
+            title='Отклик отклонен',
+            message=f'Ваш отклик на проект "{project.title}" был отклонен. Заказчик выбрал другого исполнителя.',
+            notification_type='project_response',
+            related_id=project.id
+        )
+        db.session.add(notification)
+
+    # уведомление выбранному фрилансеру
+    accepted_notification = Notification(
+        user_id=response.freelancer_id,
+        title='Ваш отклик принят!',
+        message=f'Заказчик принял ваш отклик на проект "{project.title}". Начинайте работу!',
+        notification_type='project_accepted',
+        related_id=project.id
+    )
+    db.session.add(accepted_notification)
+
+    # автоматически создаем первое сообщение в чате
+    welcome_message = Message(
+        sender_id=current_user.id,
+        receiver_id=response.freelancer_id,
+        content=f'Здравствуйте! Я принял ваш отклик на проект "{project.title}". Давайте обсудим детали сотрудничества.'
+    )
+    db.session.add(welcome_message)
+
+    db.session.commit()
+
+    flash('✅ Фрилансер назначен! Проект переведен в статус "В работе". Чат создан автоматически.')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+# завершить проект
+@app.route('/project/<int:project_id>/complete')
+@login_required
+def complete_project(project_id):
+    project = Project.query.get_or_404(project_id)
+
+    # проверяем, что пользователь - владелец проекта или назначенный фрилансер
+    if project.client_id != current_user.id and project.freelancer_id != current_user.id:
+        flash('Доступ запрещен')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    project.status = 'completed'
+    project.completed_at = datetime.now(timezone.utc)
+
+    # Уведомление второй стороне
+    other_user_id = project.freelancer_id if current_user.id == project.client_id else project.client_id
+    notification = Notification(
+        user_id=other_user_id,
+        title='Проект завершен!',
+        message=f'Проект "{project.title}" был завершен.',
+        notification_type='project_completed',
+        related_id=project.id
+    )
+    db.session.add(notification)
+
+    db.session.commit()
+
+    flash('✅ Проект завершен! Теперь можно оставить отзыв об исполнителе.')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+# отменить проект
+@app.route('/project/<int:project_id>/cancel')
+@login_required
+def cancel_project(project_id):
+    project = Project.query.get_or_404(project_id)
+
+    # Только владелец может отменить проект
+    if project.client_id != current_user.id:
+        flash('Доступ запрещен')
+        return redirect(url_for('project_detail', project_id=project_id))
+
+    project.status = 'cancelled'
+
+    # Уведомление фрилансеру, если он был назначен
+    if project.freelancer_id:
+        notification = Notification(
+            user_id=project.freelancer_id,
+            title='Проект отменен',
+            message=f'Проект "{project.title}" был отменен заказчиком.',
+            notification_type='project_cancelled',
+            related_id=project.id
+        )
+        db.session.add(notification)
+
+    db.session.commit()
+
+    flash('⚠️ Проект отменен')
+    return redirect(url_for('project_detail', project_id=project_id))
+
+
+
+
 # отклик на проект
 @app.route('/project/<int:project_id>/respond', methods=['POST'])
 @login_required
@@ -381,38 +772,39 @@ def respond_to_project(project_id):
 
     project = Project.query.get_or_404(project_id)
 
-    # проверка не откликался ли уже
-    existing_message = Message.query.filter_by(
-        sender_id=current_user.id,
-        receiver_id=project.client_id
+    # проверка не откликался ли пользователь
+    existing_response = ProjectResponse.query.filter_by(
+        project_id=project_id,
+        freelancer_id=current_user.id
     ).first()
 
-    if existing_message:
+    if existing_response:
         flash('Вы уже откликались на этот проект')
         return redirect(url_for('project_detail', project_id=project_id))
 
-    # первое сообщение
-    first_message = Message(
-        sender_id=current_user.id,
-        receiver_id=project.client_id,
-        content=f'Здравствуйте! Я заинтересован в вашем проекте "{project.title}". Мой опыт: {current_user.profile.experience if current_user.profile else "не указан"}. Давайте обсудим детали!'
+    # создание отклика
+    response = ProjectResponse(
+        project_id=project_id,
+        freelancer_id=current_user.id,
+        message=request.form.get('message', ''),
+        proposed_budget=float(request.form.get('proposed_budget', project.budget))
     )
-    db.session.add(first_message)
+    db.session.add(response)
 
-    # уведомление для владельца
-    response_notification = Notification(
+    # Создаем уведомление для владельца проекта
+    notification = Notification(
         user_id=project.client_id,
         title='Новый отклик на ваш проект!',
-        message=f'Пользователь {current_user.username} откликнулся на ваш проект "{project.title}". Перейдите в сообщения для обсуждения.',
+        message=f'Пользователь {current_user.username} откликнулся на ваш проект "{project.title}".',
         notification_type='project_response',
         related_id=project.id
     )
-    db.session.add(response_notification)
+    db.session.add(notification)
 
     db.session.commit()
 
-    flash('✅ Отклик отправлен! Заказчик получил уведомление. Теперь вы можете общаться в чате.')
-    return redirect(url_for('chat_list', user_id=project.client_id))
+    flash('✅ Отклик отправлен! Заказчик получил уведомление.')
+    return redirect(url_for('project_detail', project_id=project_id))
 
 
 # уведомления
@@ -542,8 +934,8 @@ def chat_list():
                            time=time)
 
 
-@app.route('/send_message', methods=['POST'])
-@limiter.limit("5 per minute")
+@app.route('/api/send_message', methods=['POST'])
+@login_required
 def send_message():
     receiver_id = request.json.get('receiver_id')
     content = request.json.get('content')
@@ -780,11 +1172,14 @@ def close_support_ticket(ticket_id):
 @app.route('/admin')
 @login_required
 def admin_dashboard():
+    print(
+        f"🔍 Проверка прав пользователя {current_user.username}: is_moderator = {current_user.is_moderator}")  # Для отладки
+
     if not current_user.is_moderator:
-        flash('Доступ запрещен')
+        flash('Доступ запрещен. Только модераторы могут просматривать эту страницу.')
         return redirect(url_for('index'))
 
-    # все обращения
+    # Получаем ВСЕ обращения (не только открытые)
     all_tickets = SupportTicket.query.order_by(desc(SupportTicket.created_at)).all()
     open_tickets = [t for t in all_tickets if t.status in ['open', 'in_progress']]
     closed_tickets = [t for t in all_tickets if t.status == 'closed']
@@ -838,12 +1233,103 @@ def admin_ticket_detail(ticket_id):
 
 
 def init_db():
-    """инициализация базы данных"""
+    """Инициализация базы данных - ПЕРЕСОЗДАЕТ ВСЕ ТАБЛИЦЫ"""
+    with app.app_context():
+        db.drop_all()  # Удаляем все таблицы
+        db.create_all()  # Создаем заново с новыми полями
+
+        # Создаем ТОЛЬКО модератора
+        moderator = User(
+            username='moderator',
+            email='moderator@test.ru',
+            is_moderator=True
+        )
+        moderator.password_hash = generate_password_hash('moderator123')
+        db.session.add(moderator)
+        db.session.commit()
+
+
+# Добавьте эту функцию ПЕРЕД if __name__ == '__main__':
+
+def check_and_migrate_database():
+    """Проверяет и обновляет структуру базы данных при необходимости"""
+    with app.app_context():
+        try:
+            print("🔍 Проверяем структуру базы данных...")
+
+            # Проверяем существование таблицы project
+            result = db.session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='project'"))
+            if not result.fetchone():
+                print("❌ Таблица project не найдена. Запустите init_db() сначала.")
+                return False
+
+            # Проверяем существование полей в таблице project
+            result = db.session.execute(text("PRAGMA table_info(project)"))
+            columns = [row[1] for row in result]
+            migrations_applied = 0
+
+            # Список полей для добавления
+            fields_to_add = [
+                ('technologies', 'VARCHAR(500)'),
+                ('freelancer_id', 'INTEGER REFERENCES user(id)'),
+                ('completed_at', 'DATETIME')
+            ]
+
+            for field_name, field_type in fields_to_add:
+                if field_name not in columns:
+                    print(f"📝 Добавляем поле {field_name} в таблицу project...")
+                    db.session.execute(text(f"ALTER TABLE project ADD COLUMN {field_name} {field_type}"))
+                    migrations_applied += 1
+                    print(f"✅ Поле {field_name} добавлено!")
+                else:
+                    print(f"✅ Поле {field_name} уже существует")
+
+            # Проверяем существование таблицы project_response
+            result = db.session.execute(
+                text("SELECT name FROM sqlite_master WHERE type='table' AND name='project_response'"))
+            if not result.fetchone():
+                print("📝 Создаем таблицу project_response...")
+                db.session.execute(text("""
+                    CREATE TABLE project_response (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        project_id INTEGER NOT NULL,
+                        freelancer_id INTEGER NOT NULL,
+                        message TEXT,
+                        proposed_budget FLOAT,
+                        status VARCHAR(20) DEFAULT 'pending',
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (project_id) REFERENCES project (id),
+                        FOREIGN KEY (freelancer_id) REFERENCES user (id)
+                    )
+                """))
+                migrations_applied += 1
+                print("✅ Таблица project_response создана!")
+            else:
+                print("✅ Таблица project_response уже существует")
+
+            if migrations_applied > 0:
+                db.session.commit()
+                print(f"🎉 Применено {migrations_applied} миграций! База данных обновлена.")
+            else:
+                print("✅ База данных уже актуальна. Миграции не требуются.")
+
+            return True
+
+        except Exception as e:
+            print(f"❌ Ошибка при проверке базы данных: {e}")
+            db.session.rollback()
+            return False
+
+
+# ОБНОВИТЕ функцию init_db() чтобы она создавала все нужные таблицы:
+
+def init_db():
+    """Инициализация базы данных - ТОЛЬКО модератор и базовые таблицы"""
     with app.app_context():
         db.drop_all()
         db.create_all()
 
-        # логин и пароль модера
+        # Создаем ТОЛЬКО модератора
         moderator = User(
             username='moderator',
             email='moderator@test.ru',
@@ -854,9 +1340,8 @@ def init_db():
         db.session.add(moderator)
         db.session.commit()
 
-        print("База данных инициализирована!")
-        print("Создан только модератор:")
-        print("Модератор - moderator@test.ru / moderator123")
+        print("✅ База данных инициализирована!")
+        print("🔑 Модератор - moderator@test.ru / moderator123")
         print("")
         print("Для тестирования:")
         print("1. Зарегистрируйте новых пользователей")
@@ -864,7 +1349,62 @@ def init_db():
         print("3. Тестируйте функционал с чистого листа")
 
 
+def migrate_database():
+    """Миграция базы данных для добавления недостающих таблиц и полей"""
+    with app.app_context():
+        try:
+            print("🔄 Проверяем необходимость миграций...")
+
+            # Проверяем существование таблицы review
+            result = db.session.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='review'"))
+            if not result.fetchone():
+                print("📝 Создаем таблицу review...")
+                db.session.execute(text("""
+                    CREATE TABLE review (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        project_id INTEGER NOT NULL,
+                        reviewer_id INTEGER NOT NULL,
+                        freelancer_id INTEGER NOT NULL,
+                        rating INTEGER NOT NULL,
+                        comment TEXT,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (project_id) REFERENCES project (id),
+                        FOREIGN KEY (reviewer_id) REFERENCES user (id),
+                        FOREIGN KEY (freelancer_id) REFERENCES user (id)
+                    )
+                """))
+                print("✅ Таблица review создана!")
+            else:
+                # Проверяем существование поля freelancer_id в таблице review
+                result = db.session.execute(text("PRAGMA table_info(review)"))
+                columns = [row[1] for row in result]
+
+                if 'freelancer_id' not in columns:
+                    print("📝 Добавляем поле freelancer_id в таблицу review...")
+                    db.session.execute(text("ALTER TABLE review ADD COLUMN freelancer_id INTEGER NOT NULL DEFAULT 1"))
+                    db.session.execute(text("ALTER TABLE review ADD FOREIGN KEY (freelancer_id) REFERENCES user(id)"))
+                    print("✅ Поле freelancer_id добавлено!")
+
+            db.session.commit()
+            print("🎉 Миграция базы данных завершена!")
+            return True
+
+        except Exception as e:
+            print(f"❌ Ошибка при миграции базы данных: {e}")
+            db.session.rollback()
+            return False
+
+
 if __name__ == '__main__':
+    # Проверяем и обновляем базу данных при каждом запуске
     if not os.path.exists('instance/freelance.db'):
+        print("🆕 База данных не найдена. Создаем новую...")
         init_db()
+    else:
+        print("🔍 База данных найдена. Проверяем структуру...")
+        check_and_migrate_database()
+        migrate_database()  # Добавляем вызов функции миграции
+
+    print("🚀 Запуск приложения...")
     app.run(debug=True, port=5001, host='0.0.0.0')
+
