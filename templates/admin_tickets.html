@@ -3,13 +3,13 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="fw-bold mb-0">
+                    <h2 class="fw-bold mb-0 text-glow">
                         <i class="bi bi-inbox text-primary me-2"></i>Обращения в поддержку
                     </h2>
-                    <div class="badge bg-primary fs-6">{{ tickets|length }} обращений</div>
+                    <div class="badge bg-primary fs-6 code-font">{{ tickets|length }} обращений</div>
                 </div>
 
                 <!-- Фильтры -->
@@ -40,23 +40,23 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Тема</th>
-                                <th>Пользователь</th>
-                                <th>Категория</th>
-                                <th>Статус</th>
-                                <th>Приоритет</th>
-                                <th>Дата создания</th>
-                                <th>Обновлено</th>
-                                <th>Действия</th>
+                                <th class="code-font">ID</th>
+                                <th class="code-font">Тема</th>
+                                <th class="code-font">Пользователь</th>
+                                <th class="code-font">Категория</th>
+                                <th class="code-font">Статус</th>
+                                <th class="code-font">Приоритет</th>
+                                <th class="code-font">Дата создания</th>
+                                <th class="code-font">Обновлено</th>
+                                <th class="code-font">Действия</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for ticket in tickets %}
                             <tr>
-                                <td><strong>#{{ ticket.id }}</strong></td>
+                                <td><strong class="code-font">#{{ ticket.id }}</strong></td>
                                 <td>
-                                    <a href="{{ url_for('admin_ticket_detail', ticket_id=ticket.id) }}" class="text-decoration-none fw-bold">
+                                    <a href="{{ url_for('admin_ticket_detail', ticket_id=ticket.id) }}" class="text-decoration-none fw-bold text-glow">
                                         {{ ticket.subject }}
                                     </a>
                                 </td>
@@ -65,12 +65,12 @@
                                         <div class="user-avatar me-2" style="width: 30px; height: 30px; font-size: 0.7rem;">
                                             {{ ticket.user.username[0] }}
                                         </div>
-                                        {{ ticket.user.username }}
+                                        <span class="code-font">{{ ticket.user.username }}</span>
                                     </div>
                                 </td>
-                                <td>{{ ticket.category }}</td>
+                                <td class="code-font">{{ ticket.category }}</td>
                                 <td>
-                                    <span class="badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                    <span class="badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %} code-font">
                                         {% if ticket.status == 'open' %}Открыт
                                         {% elif ticket.status == 'in_progress' %}В работе
                                         {% elif ticket.status == 'resolved' %}Решен
@@ -78,15 +78,15 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{% if ticket.priority == 'low' %}success{% elif ticket.priority == 'medium' %}warning{% elif ticket.priority == 'high' %}danger{% else %}dark{% endif %}">
+                                    <span class="badge bg-{% if ticket.priority == 'low' %}success{% elif ticket.priority == 'medium' %}warning{% elif ticket.priority == 'high' %}danger{% else %}dark{% endif %} code-font">
                                         {% if ticket.priority == 'low' %}Низкий
                                         {% elif ticket.priority == 'medium' %}Средний
                                         {% elif ticket.priority == 'high' %}Высокий
                                         {% else %}Срочный{% endif %}
                                     </span>
                                 </td>
-                                <td class="text-muted">{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
-                                <td class="text-muted">{{ ticket.updated_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td class="text-muted code-font">{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                                <td class="text-muted code-font">{{ ticket.updated_at.strftime('%d.%m.%Y %H:%M') }}</td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('admin_ticket_detail', ticket_id=ticket.id) }}" class="btn btn-outline-primary">
@@ -108,8 +108,8 @@
                 <div class="text-center py-5 text-muted">
                     <i class="bi bi-inbox display-4 mb-3"></i>
                     <h3>Обращений нет</h3>
-                    <p class="mb-4">Здесь будут отображаться обращения пользователей в поддержку</p>
-                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">
+                    <p class="mb-4 code-font">Здесь будут отображаться обращения пользователей в поддержку</p>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary glow">
                         <i class="bi bi-arrow-left me-2"></i>Назад в панель
                     </a>
                 </div>
@@ -124,6 +124,12 @@
     width: 30px;
     height: 30px;
     font-size: 0.7rem;
+}
+
+.btn-group .btn.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
 }
 </style>
 
