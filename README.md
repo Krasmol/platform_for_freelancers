@@ -225,22 +225,22 @@ python -c "from app import migrate_database; migrate_database()"
 
 ### Основные страницы:
 **Главная**: Статистика платформы и свежие проекты
-<img width="1382" height="910" alt="image" src="https://github.com/user-attachments/assets/d4ec5a8d-5a46-4bb6-9281-529ec9c78fa3" />
+<img width="1232" height="735" alt="image" src="https://github.com/user-attachments/assets/54dea4d0-c45e-4d97-9137-a3f621478cec" />
 
 **Проекты**: Поиск и фильтрация проектов
-<img width="1371" height="905" alt="image" src="https://github.com/user-attachments/assets/40708f8a-cfc2-49ec-8dc4-259aadc7c031" />
+<img width="1266" height="826" alt="image" src="https://github.com/user-attachments/assets/ead3f007-79bd-42f9-ab3b-980715b3baa3" />
 
 **Чат**: Real-time общение между пользователями
-<img width="1385" height="584" alt="image" src="https://github.com/user-attachments/assets/e7d3ae57-bc2f-4af8-a56f-bf49e77baba2" />
+<img width="1249" height="522" alt="image" src="https://github.com/user-attachments/assets/da7ebdcb-8668-44c6-91d5-8ca7ca9d1a71" />
 
 **Профиль**: Управление своими проектами и статистика
-<img width="1286" height="599" alt="image" src="https://github.com/user-attachments/assets/8caf7b75-e02c-4f86-bfce-0cd236ed0c53" />
+<img width="1247" height="618" alt="image" src="https://github.com/user-attachments/assets/790a64e2-9390-45b5-91b0-3050514d3c69" />
 
 **Поддержка**: Система обращений и тикетов
-<img width="1282" height="736" alt="image" src="https://github.com/user-attachments/assets/d83d7a40-2963-4845-8b4e-bf0c35dad386" />
+<img width="1249" height="743" alt="image" src="https://github.com/user-attachments/assets/2ebd5efa-c2b3-447a-8f95-c82eeb9d506b" />
 
 **Панель модератора**: Управление платформой
-<img width="1243" height="880" alt="image" src="https://github.com/user-attachments/assets/2d295213-73bc-4ed8-b19f-448d6c1ace1a" />
+<img width="1204" height="930" alt="image" src="https://github.com/user-attachments/assets/4852b13a-7fba-4fa5-b129-540c58e7ce31" />
 
 
 ## 🤝 Участие в разработке
