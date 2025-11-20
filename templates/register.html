@@ -3,13 +3,13 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body p-5">
                 <div class="text-center mb-4">
                     <div class="feature-icon mx-auto">
                         <i class="bi bi-person-plus"></i>
                     </div>
-                    <h2 class="fw-bold mt-3">Присоединяйтесь к сообществу</h2>
+                    <h2 class="fw-bold mt-3 text-glow">Присоединяйтесь к сообществу</h2>
                     <p class="text-muted">Создайте аккаунт и начните развивать свой бизнес</p>
                 </div>
 
@@ -18,10 +18,10 @@
                         <div class="col-12 mb-3">
                             <label for="username" class="form-label">Имя пользователя</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light">
+                                <span class="input-group-text bg-dark border-end-0">
                                     <i class="bi bi-person"></i>
                                 </span>
-                                <input type="text" class="form-control" id="username" name="username"
+                                <input type="text" class="form-control border-start-0" id="username" name="username"
                                        placeholder="Придумайте уникальное имя" required>
                             </div>
                         </div>
@@ -29,10 +29,10 @@
                         <div class="col-12 mb-3">
                             <label for="email" class="form-label">Email</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light">
+                                <span class="input-group-text bg-dark border-end-0">
                                     <i class="bi bi-envelope"></i>
                                 </span>
-                                <input type="email" class="form-control" id="email" name="email"
+                                <input type="email" class="form-control border-start-0" id="email" name="email"
                                        placeholder="your@email.com" required>
                             </div>
                         </div>
@@ -40,10 +40,10 @@
                         <div class="col-12 mb-4">
                             <label for="password" class="form-label">Пароль</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-light">
+                                <span class="input-group-text bg-dark border-end-0">
                                     <i class="bi bi-lock"></i>
                                 </span>
-                                <input type="password" class="form-control" id="password" name="password"
+                                <input type="password" class="form-control border-start-0" id="password" name="password"
                                        placeholder="Не менее 6 символов" required minlength="6">
                             </div>
                         </div>
@@ -53,13 +53,13 @@
                         <label class="form-label fw-bold">Я хочу:</label>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <div class="form-check card p-3 h-100">
+                                <div class="form-check card p-3 h-100 border-2 {% if request.form.get('user_type', 'freelancer') == 'freelancer' %}border-primary{% else %}border-dark{% endif %}">
                                     <input class="form-check-input" type="radio" id="freelancer" name="user_type" value="freelancer" checked>
                                     <label class="form-check-label" for="freelancer">
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-code-slash text-primary me-3 fs-4"></i>
                                             <div>
-                                                <strong>Работать фрилансером</strong>
+                                                <strong class="text-glow">Работать фрилансером</strong>
                                                 <small class="d-block text-muted">Найти интересные проекты</small>
                                             </div>
                                         </div>
@@ -67,13 +67,13 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <div class="form-check card p-3 h-100">
+                                <div class="form-check card p-3 h-100 border-2 {% if request.form.get('user_type') == 'client' %}border-primary{% else %}border-dark{% endif %}">
                                     <input class="form-check-input" type="radio" id="client" name="user_type" value="client">
                                     <label class="form-check-label" for="client">
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-briefcase text-success me-3 fs-4"></i>
                                             <div>
-                                                <strong>Нанять фрилансера</strong>
+                                                <strong class="text-glow">Нанять фрилансера</strong>
                                                 <small class="d-block text-muted">Найти исполнителей</small>
                                             </div>
                                         </div>
@@ -83,7 +83,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold glow">
                         <i class="bi bi-rocket me-2"></i>Зарегистрироваться
                     </button>
                 </form>
@@ -98,4 +98,15 @@
         </div>
     </div>
 </div>
+
+<style>
+.form-check-input:checked {
+    background-color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.card.border-2.border-primary {
+    background: rgba(99, 102, 241, 0.05);
+}
+</style>
 {% endblock %}
