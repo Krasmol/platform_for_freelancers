@@ -4,39 +4,39 @@
 <div class="row justify-content-center">
     <div class="col-lg-10">
         <!-- Информация о тикете -->
-        <div class="card mb-4">
+        <div class="card mb-4 border-primary">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <h2 class="fw-bold mb-2">{{ ticket.subject }}</h2>
+                        <h2 class="fw-bold mb-2 text-glow">{{ ticket.subject }}</h2>
                         <div class="d-flex flex-wrap gap-2 mb-3">
-                            <span class="badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                            <span class="badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %} code-font">
                                 {% if ticket.status == 'open' %}Открыт
                                 {% elif ticket.status == 'in_progress' %}В работе
                                 {% elif ticket.status == 'resolved' %}Решен
                                 {% else %}Закрыт{% endif %}
                             </span>
-                            <span class="badge bg-{% if ticket.priority == 'low' %}success{% elif ticket.priority == 'medium' %}warning{% elif ticket.priority == 'high' %}danger{% else %}dark{% endif %}">
+                            <span class="badge bg-{% if ticket.priority == 'low' %}success{% elif ticket.priority == 'medium' %}warning{% elif ticket.priority == 'high' %}danger{% else %}dark{% endif %} code-font">
                                 {% if ticket.priority == 'low' %}Низкий
                                 {% elif ticket.priority == 'medium' %}Средний
                                 {% elif ticket.priority == 'high' %}Высокий
                                 {% else %}Срочный{% endif %} приоритет
                             </span>
-                            <span class="badge bg-primary">{{ ticket.category }}</span>
+                            <span class="badge bg-primary code-font">{{ ticket.category }}</span>
                         </div>
                     </div>
                     <div class="text-end">
-                        <small class="text-muted d-block">Создан</small>
-                        <strong>{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</strong>
+                        <small class="text-muted d-block code-font">Создан</small>
+                        <strong class="code-font">{{ ticket.created_at.strftime('%d.%m.%Y %H:%M') }}</strong>
                     </div>
                 </div>
 
                 <div class="row text-muted">
                     <div class="col-md-6">
-                        <small>Автор: <strong>{{ ticket.user.username }}</strong></small>
+                        <small class="code-font">Автор: <strong>{{ ticket.user.username }}</strong></small>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <small>Обновлен: {{ ticket.updated_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                        <small class="code-font">Обновлен: {{ ticket.updated_at.strftime('%d.%m.%Y %H:%M') }}</small>
                     </div>
                 </div>
             </div>
@@ -45,7 +45,7 @@
         <!-- Переписка -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="fw-bold mb-4">Переписка</h5>
+                <h5 class="fw-bold mb-4 text-glow">Переписка</h5>
 
                 <div id="ticket-messages" class="ticket-messages mb-4">
                     {% for message in messages %}
@@ -56,10 +56,10 @@
                                 <i class="bi bi-shield-check"></i>
                             </div>
                             {% endif %}
-                            <div class="message-content {% if message.is_admin_response %}bg-light{% else %}bg-primary text-white{% endif %} rounded p-3 flex-grow-1">
+                            <div class="message-content {% if message.is_admin_response %}bg-dark text-light{% else %}bg-primary text-white{% endif %} rounded p-3 flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <strong>{% if message.is_admin_response %}Поддержка{% else %}{{ message.user.username }}{% endif %}</strong>
-                                    <small class="{% if message.is_admin_response %}text-muted{% else %}text-white-50{% endif %}">
+                                    <strong class="code-font">{% if message.is_admin_response %}Поддержка{% else %}{{ message.user.username }}{% endif %}</strong>
+                                    <small class="{% if message.is_admin_response %}text-muted{% else %}text-white-50{% endif %} code-font">
                                         {{ message.created_at.strftime('%d.%m.%Y %H:%M') }}
                                     </small>
                                 </div>
@@ -79,7 +79,7 @@
                 {% if ticket.status != 'closed' %}
                 <form method="POST" action="{{ url_for('reply_support_ticket', ticket_id=ticket.id) }}">
                     <div class="mb-3">
-                        <label for="content" class="form-label fw-bold">
+                        <label for="content" class="form-label fw-bold code-font">
                             {% if admin_view %}Ответ поддержки{% else %}Ваш ответ{% endif %}
                         </label>
                         <textarea class="form-control" id="content" name="content" rows="4"
@@ -103,7 +103,7 @@
                                 <i class="bi bi-x-circle me-2"></i>Закрыть обращение
                             </a>
                             {% endif %}
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary glow">
                                 <i class="bi bi-send me-2"></i>Отправить ответ
                             </button>
                         </div>
@@ -114,7 +114,7 @@
                     <i class="bi bi-info-circle me-2"></i>Это обращение закрыто. Вы не можете отвечать в закрытых обращениях.
                 </div>
                 <div class="text-center">
-                    <a href="{% if admin_view %}{{ url_for('admin_tickets') }}{% else %}{{ url_for('support') }}{% endif %}" class="btn btn-primary">
+                    <a href="{% if admin_view %}{{ url_for('admin_tickets') }}{% else %}{{ url_for('support') }}{% endif %}" class="btn btn-primary glow">
                         <i class="bi bi-arrow-left me-2"></i>Вернуться к списку
                     </a>
                 </div>
@@ -129,24 +129,28 @@
     max-height: 500px;
     overflow-y: auto;
     padding: 1rem;
-    border: 1px solid #e9ecef;
-    border-radius: 0.375rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
 }
 
 .message-content {
     max-width: 80%;
+    border: 1px solid var(--border-color);
 }
 
 .admin-message .message-content {
     border-bottom-left-radius: 0;
+    background: var(--bg-card) !important;
 }
 
 .user-message .message-content {
     border-bottom-right-radius: 0;
+    background: linear-gradient(45deg, var(--accent-primary), #4f46e5) !important;
 }
 
 .user-avatar.bg-success {
-    background: linear-gradient(45deg, #10b981, #059669) !important;
+    background: linear-gradient(45deg, var(--success), #059669) !important;
     color: white;
     display: flex;
     align-items: center;
