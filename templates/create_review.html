@@ -3,24 +3,24 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-6">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body p-5">
                 <div class="text-center mb-4">
                     <div class="feature-icon mx-auto">
                         <i class="bi bi-star"></i>
                     </div>
-                    <h2 class="fw-bold mt-3">Оставить отзыв</h2>
-                    <p class="text-muted">Проект: {{ project.title }}</p>
+                    <h2 class="fw-bold mt-3 text-glow">Оставить отзыв</h2>
+                    <p class="text-muted code-font">Проект: {{ project.title }}</p>
                 </div>
 
                 <form method="POST">
                     <div class="mb-4 text-center">
-                        <label class="form-label fw-bold mb-3">Оценка исполнителя</label>
+                        <label class="form-label fw-bold mb-3 code-font">Оценка исполнителя</label>
                         <div class="rating-stars mb-3">
                             {% for i in range(5, 0, -1) %}
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="rating" id="rating{{ i }}" value="{{ i }}" required>
-                                <label class="form-check-label fs-3" for="rating{{ i }}">
+                                <label class="form-check-label fs-3 text-warning" for="rating{{ i }}">
                                     {% for star in range(i) %}⭐{% endfor %}
                                 </label>
                             </div>
@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="comment" class="form-label fw-bold">Комментарий (необязательно)</label>
+                        <label for="comment" class="form-label fw-bold code-font">Комментарий (необязательно)</label>
                         <textarea class="form-control" id="comment" name="comment" rows="4"
                                   placeholder="Расскажите о работе с исполнителем..."></textarea>
                     </div>
@@ -38,7 +38,7 @@
                         <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-outline-secondary me-md-2">
                             <i class="bi bi-arrow-left me-2"></i>Назад
                         </a>
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn btn-success glow">
                             <i class="bi bi-send me-2"></i>Оставить отзыв
                         </button>
                     </div>
@@ -56,12 +56,17 @@
 .rating-stars .form-check-label {
     cursor: pointer;
     opacity: 0.5;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, transform 0.2s;
 }
 
 .rating-stars .form-check-input:checked + .form-check-label,
 .rating-stars .form-check-label:hover {
     opacity: 1;
+    transform: scale(1.1);
+}
+
+.rating-stars .form-check-label:hover {
+    text-shadow: 0 0 10px gold;
 }
 </style>
 {% endblock %}
