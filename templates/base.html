@@ -1,113 +1,137 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FreelanceHub - Платформа для фрилансеров</title>
-    
+
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #f8fafc;
-            --accent: #10b981;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #1a1a1a;
+            --bg-hover: #252525;
+            --accent-primary: #6366f1;
+            --accent-secondary: #10b981;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: #2d2d2d;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
         }
-        
+
+        [data-bs-theme="dark"] {
+            --bs-body-bg: var(--bg-primary);
+            --bs-body-color: var(--text-primary);
+            --bs-border-color: var(--border-color);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             min-height: 100vh;
+            color: var(--text-primary);
         }
-        
+
+        .navbar {
+            background: rgba(10, 10, 10, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
         .navbar-brand {
+            font-family: 'JetBrains Mono', monospace;
             font-weight: 700;
             font-size: 1.5rem;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
+
         .main-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             margin-top: 2rem;
             margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
         }
-        
+
         .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-primary);
         }
-        
+
         .btn-primary {
-            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            background: linear-gradient(45deg, var(--accent-primary), #4f46e5);
             border: none;
-            border-radius: 10px;
-            padding: 12px 30px;
-            font-weight: 500;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
         }
-        
+
         .btn-success {
-            background: linear-gradient(45deg, var(--accent), #059669);
+            background: linear-gradient(45deg, var(--accent-secondary), #059669);
             border: none;
-            border-radius: 10px;
-            padding: 12px 30px;
-            font-weight: 500;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
         }
-        
+
         .nav-link {
             font-weight: 500;
-            color: var(--text-dark) !important;
+            color: var(--text-secondary) !important;
             margin: 0 5px;
-            border-radius: 10px;
+            border-radius: 8px;
             transition: all 0.3s ease;
         }
-        
+
         .nav-link:hover {
             background: rgba(99, 102, 241, 0.1);
-            color: var(--primary) !important;
+            color: var(--accent-primary) !important;
         }
-        
+
         .hero-section {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border-radius: 16px;
             padding: 4rem 2rem;
             text-align: center;
             margin-bottom: 3rem;
+            border: 1px solid var(--border-color);
         }
-        
+
         .feature-icon {
             width: 60px;
             height: 60px;
-            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
-            border-radius: 15px;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -115,41 +139,51 @@
             color: white;
             font-size: 1.5rem;
         }
-        
+
         .badge {
-            border-radius: 8px;
-            padding: 8px 12px;
+            border-radius: 6px;
+            padding: 6px 12px;
             font-weight: 500;
+            font-size: 0.8rem;
         }
 
         .form-control, .form-select {
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            padding: 12px 15px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
             transition: all 0.3s ease;
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary);
+            background: var(--bg-card);
+            border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            color: var(--text-primary);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
         }
 
         .stats-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
             color: white;
-            border-radius: 15px;
+            border-radius: 12px;
             padding: 2rem;
             text-align: center;
+            border: none;
         }
 
         .project-card {
-            border-left: 4px solid var(--primary);
+            border-left: 4px solid var(--accent-primary);
         }
 
         .user-avatar {
             width: 50px;
             height: 50px;
-            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -157,13 +191,13 @@
             color: white;
             font-weight: 600;
             font-size: 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .footer {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
+            background: rgba(10, 10, 10, 0.9);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
             padding: 2rem 0;
             margin-top: 4rem;
         }
@@ -172,7 +206,7 @@
             position: absolute;
             top: -5px;
             right: -5px;
-            background: #ef4444;
+            background: var(--danger);
             color: white;
             border-radius: 50%;
             width: 20px;
@@ -181,32 +215,159 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
         }
 
-        .dropdown-notifications {
-            width: 350px;
+        .dropdown-menu {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .notification-item {
-            border-left: 4px solid;
+        .dropdown-item {
+            color: var(--text-primary);
             transition: all 0.2s ease;
         }
 
-        .notification-item:hover {
-            background-color: #f8fafc;
+        .dropdown-item:hover {
+            background: var(--bg-hover);
+            color: var(--accent-primary);
         }
 
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-border-color: var(--border-color);
+        }
+
+        .table-hover tbody tr:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .alert {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .border-bottom {
+            border-bottom-color: var(--border-color) !important;
+        }
+
+        .border-top {
+            border-top-color: var(--border-color) !important;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
+
+        /* Glow effects */
+        .glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        /* Code-like elements */
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Status badges */
+        .badge.bg-success { background: var(--success) !important; }
+        .badge.bg-warning { background: var(--warning) !important; }
+        .badge.bg-danger { background: var(--danger) !important; }
+        .badge.bg-info { background: var(--info) !important; }
+        .badge.bg-primary { background: var(--accent-primary) !important; }
+
+        /* Notification styles */
         .notification-unread {
-            background-color: #f0f9ff;
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        /* Chat styles */
+        .chat-messages {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .message-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+
+        .message-outgoing .message-content {
+            background: linear-gradient(45deg, var(--accent-primary), #4f46e5);
+            color: white;
+        }
+        /* Fix для z-index dropdown меню */
+        .navbar-nav .dropdown-menu {
+            z-index: 1050 !important;
+        }
+
+        .dropdown-menu {
+            z-index: 1060 !important;
+        }
+
+        .navbar {
+            z-index: 1030 !important;
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section {
+            position: relative;
+            z-index: 1;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu.show {
+            z-index: 1070 !important;
+        }
+
+        /* Для мобильного меню */
+        .navbar-collapse {
+            z-index: 1040 !important;
         }
     </style>
 </head>
 <body>
     <!-- Навигация -->
-    <nav class="navbar navbar-expand-lg navbar-light">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="bi bi-briefcase me-2"></i>FreelanceHub
+                <i class="bi bi-cpu me-2"></i>FreelanceHub
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -246,15 +407,15 @@
                                 <span class="notification-badge">{{ get_unread_notifications_count() }}</span>
                                 {% endif %}
                             </a>
-                            <ul class="dropdown-menu dropdown-notifications dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li><h6 class="dropdown-header">Уведомления</h6></li>
                                 {% set recent_notifications = notifications_query(current_user.id) %}
                                 {% if recent_notifications %}
                                     {% for notification in recent_notifications %}
                                     <li>
-                                        <a class="dropdown-item d-flex align-items-start py-2 notification-item {% if not notification.is_read %}notification-unread{% endif %}"
+                                        <a class="dropdown-item d-flex align-items-start py-2 {% if not notification.is_read %}notification-unread{% endif %}"
                                            href="{{ url_for('notifications') }}"
-                                           style="border-left-color: {% if notification.notification_type == 'project_response' %}#3b82f6{% elif notification.notification_type == 'message' %}#06b6d4{% elif notification.notification_type == 'system' %}#6b7280{% elif notification.notification_type == 'project_completed' %}#10b981{% else %}#f59e0b{% endif %}">
+                                           style="border-left-color: {% if notification.notification_type == 'project_response' %}var(--accent-primary){% elif notification.notification_type == 'message' %}var(--info){% elif notification.notification_type == 'system' %}var(--text-muted){% elif notification.notification_type == 'project_completed' %}var(--success){% else %}var(--warning){% endif %}">
                                             <div class="me-3">
                                                 <i class="bi {{ get_notification_icon(notification.notification_type) }} text-{{ get_notification_color(notification.notification_type) }}"></i>
                                             </div>
@@ -298,21 +459,20 @@
                             </a>
                         </li>
 
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-person me-1"></i>
-                            <span class="me-2">{{ current_user.username }}</span>
-                            <div class="online-indicator bg-success rounded-circle" style="width: 8px; height: 8px;" title="Online"></div>
-                        </div>
-
                         <!-- Профиль dropdown -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person me-1"></i>{{ current_user.username }}
-                                {% if current_user.is_client %}
-                                <small class="fw-bold" style="color: #ff6b35 !important;">(Заказчик)</small>
-                                {% else %}
-                                <small class="fw-bold" style="color: #4ecdc4 !important;">(Фрилансер)</small>
-                                {% endif %}
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                                    {{ current_user.username[0] }}
+                                </div>
+                                <span class="code-font">
+                                    {{ current_user.username }}
+                                    {% if current_user.is_client %}
+                                    <small class="text-warning">(CLIENT)</small>
+                                    {% else %}
+                                    <small class="text-info">(FREELANCER)</small>
+                                    {% endif %}
+                                </span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
@@ -394,20 +554,20 @@
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <h5 class="fw-bold">
-                        <i class="bi bi-briefcase me-2"></i>FreelanceHub
+                        <i class="bi bi-cpu me-2"></i>FreelanceHub
                     </h5>
-                    <p class="mb-0">Платформа для фрилансеров и заказчиков</p>
+                    <p class="mb-0 code-font">Платформа для фрилансеров и заказчиков</p>
                 </div>
                 <div class="col-md-4 mb-4">
                     <h6>Быстрые ссылки</h6>
                     <ul class="list-unstyled">
-                        <li><a href="{{ url_for('projects') }}" class="text-white text-decoration-none">Проекты</a></li>
+                        <li><a href="{{ url_for('projects') }}" class="text-decoration-none text-muted">Проекты</a></li>
                         {% if current_user.is_authenticated %}
-                        <li><a href="{{ url_for('create_project') }}" class="text-white text-decoration-none">Создать проект</a></li>
-                        <li><a href="{{ url_for('support') }}" class="text-white text-decoration-none">Поддержка</a></li>
+                        <li><a href="{{ url_for('create_project') }}" class="text-decoration-none text-muted">Создать проект</a></li>
+                        <li><a href="{{ url_for('support') }}" class="text-decoration-none text-muted">Поддержка</a></li>
                         {% else %}
-                        <li><a href="{{ url_for('register') }}" class="text-white text-decoration-none">Регистрация</a></li>
-                        <li><a href="{{ url_for('login') }}" class="text-white text-decoration-none">Войти</a></li>
+                        <li><a href="{{ url_for('register') }}" class="text-decoration-none text-muted">Регистрация</a></li>
+                        <li><a href="{{ url_for('login') }}" class="text-decoration-none text-muted">Войти</a></li>
                         {% endif %}
                     </ul>
                 </div>
@@ -420,25 +580,31 @@
                     </ul>
                 </div>
             </div>
-            <hr class="my-4" style="border-color: rgba(255,255,255,0.2);">
+            <hr class="my-4" style="border-color: var(--border-color);">
             <div class="text-center">
-    <p class="mb-0">&copy; 2025 FreelanceHub.
-        <span>Разработано
-            <a href="https://github.com/Krasmol" class="text-white text-decoration-none" target="_blank">
-                Krasmol
-            </a>
-        </span>. Все права защищены.
-    </p>
-</div>
+                <p class="mb-0 code-font">&copy; 2025 FreelanceHub.
+                    <span>Разработано
+                        <a href="https://github.com/Krasmol" class="text-decoration-none text-info" target="_blank">
+                            Krasmol
+                        </a>
+                    </span>. Все права защищены.
+                </p>
+            </div>
+        </div>
+    </footer>
+
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // Анимация появления элементов
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.card');
             cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
                 setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
                 }, index * 100);
@@ -485,6 +651,17 @@
                 }
             }
         }
+
+        // Добавляем glow эффект при hover на карточки
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('glow');
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('glow');
+            });
+        });
     </script>
 </body>
 </html>
