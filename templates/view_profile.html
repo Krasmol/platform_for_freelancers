@@ -4,7 +4,7 @@
 <div class="row">
     <div class="col-lg-8">
         <!-- Основная информация -->
-        <div class="card mb-4">
+        <div class="card mb-4 border-primary">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center mb-4">
                     <div class="user-avatar me-4">
@@ -15,30 +15,30 @@
                         {% endif %}
                     </div>
                     <div>
-                        <h1 class="h2 fw-bold mb-1">
+                        <h1 class="h2 fw-bold mb-1 text-glow">
                             {% if current_user.is_client %}
                                 {{ current_user.username }}
                             {% else %}
                                 {{ current_user.profile.full_name if current_user.profile and current_user.profile.full_name else current_user.username }}
                             {% endif %}
                         </h1>
-                        <h4 class="text-primary mb-2">
+                        <h4 class="text-primary mb-2 code-font">
                             {% if current_user.is_client %}
-                                🎯 Заказчик
+                                🎯 ЗАКАЗЧИК
                             {% else %}
-                                {{ current_user.profile.title if current_user.profile and current_user.profile.title else 'Фрилансер' }}
+                                {{ current_user.profile.title if current_user.profile and current_user.profile.title else 'ФРИЛАНСЕР' }}
                             {% endif %}
                         </h4>
                         <div class="d-flex align-items-center">
-                            <span class="badge bg-success me-2">
+                            <span class="badge bg-success me-2 code-font">
                                 <i class="bi bi-star-fill me-1"></i>Профиль активен
                             </span>
                             {% if not current_user.is_client and current_user.profile %}
-                            <span class="badge bg-info me-2">
+                            <span class="badge bg-info me-2 code-font">
                                 ⭐ Рейтинг: {{ "%.1f"|format(get_freelancer_rating(current_user.id)) }}/5
                             </span>
                             {% endif %}
-                            <span class="text-muted">
+                            <span class="text-muted code-font">
                                 <i class="bi bi-calendar me-1"></i>
                                 На платформе с {{ current_user.created_at.strftime('%d.%m.%Y') }}
                             </span>
@@ -49,22 +49,22 @@
                 <!-- О себе -->
                 {% if not current_user.is_client and current_user.profile and current_user.profile.description %}
                 <div class="mb-4">
-                    <h5 class="fw-bold mb-3">
+                    <h5 class="fw-bold mb-3 text-glow">
                         <i class="bi bi-person-lines-fill text-primary me-2"></i>О себе
                     </h5>
-                    <p class="lead">{{ current_user.profile.description }}</p>
+                    <p class="lead text-muted">{{ current_user.profile.description }}</p>
                 </div>
                 {% endif %}
 
                 <!-- Навыки -->
                 {% if not current_user.is_client and current_user.profile and current_user.profile.skills %}
                 <div class="mb-4">
-                    <h5 class="fw-bold mb-3">
+                    <h5 class="fw-bold mb-3 text-glow">
                         <i class="bi bi-tools text-primary me-2"></i>Навыки
                     </h5>
                     <div class="d-flex flex-wrap gap-2">
                         {% for skill in current_user.profile.skills.split(',') %}
-                        <span class="badge bg-primary px-3 py-2 fs-6">
+                        <span class="badge bg-primary px-3 py-2 fs-6 code-font">
                             <i class="bi bi-check-circle me-1"></i>{{ skill.strip() }}
                         </span>
                         {% endfor %}
@@ -80,23 +80,23 @@
                 <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
                     {% if current_user.is_client %}
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button" role="tab">
+                        <button class="nav-link active code-font" id="projects-tab" data-bs-toggle="tab" data-bs-target="#projects" type="button" role="tab">
                             <i class="bi bi-briefcase me-2"></i>Мои проекты
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab">
+                        <button class="nav-link code-font" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab">
                             <i class="bi bi-graph-up me-2"></i>Статистика
                         </button>
                     </li>
                     {% else %}
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="work-tab" data-bs-toggle="tab" data-bs-target="#work" type="button" role="tab">
+                        <button class="nav-link active code-font" id="work-tab" data-bs-toggle="tab" data-bs-target="#work" type="button" role="tab">
                             <i class="bi bi-gear me-2"></i>Моя работа
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+                        <button class="nav-link code-font" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
                             <i class="bi bi-star me-2"></i>Отзывы
                         </button>
                     </li>
@@ -108,8 +108,8 @@
                     <!-- Заказчик: Проекты -->
                     <div class="tab-pane fade show active" id="projects" role="tabpanel">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold mb-0">Мои проекты</h5>
-                            <a href="{{ url_for('create_project') }}" class="btn btn-primary btn-sm">
+                            <h5 class="fw-bold mb-0 text-glow">Мои проекты</h5>
+                            <a href="{{ url_for('create_project') }}" class="btn btn-primary btn-sm glow">
                                 <i class="bi bi-plus-circle me-2"></i>Новый проект
                             </a>
                         </div>
@@ -117,40 +117,40 @@
                         {% if user_projects_active or user_projects_completed %}
                             <!-- Активные проекты -->
                             {% if user_projects_active %}
-                            <h6 class="fw-bold mb-3 text-primary">Активные проекты</h6>
+                            <h6 class="fw-bold mb-3 text-primary code-font">Активные проекты</h6>
                             <div class="table-responsive mb-4">
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Название</th>
-                                            <th>Бюджет</th>
-                                            <th>Статус</th>
-                                            <th>Исполнитель</th>
-                                            <th>Дата</th>
+                                            <th class="code-font">Название</th>
+                                            <th class="code-font">Бюджет</th>
+                                            <th class="code-font">Статус</th>
+                                            <th class="code-font">Исполнитель</th>
+                                            <th class="code-font">Дата</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for project in user_projects_active %}
                                         <tr>
                                             <td>
-                                                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="text-decoration-none">
+                                                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="text-decoration-none text-glow">
                                                     {{ project.title }}
                                                 </a>
                                             </td>
-                                            <td class="text-success fw-bold">{{ project.budget }} ₽</td>
+                                            <td class="text-success fw-bold text-glow">{{ project.budget }} ₽</td>
                                             <td>
-                                                <span class="badge bg-{% if project.status == 'open' %}success{% else %}warning{% endif %}">
+                                                <span class="badge bg-{% if project.status == 'open' %}success{% else %}warning{% endif %} code-font">
                                                     {{ 'Открыт' if project.status == 'open' else 'В работе' }}
                                                 </span>
                                             </td>
                                             <td>
                                                 {% if project.freelancer %}
-                                                {{ project.freelancer.username }}
+                                                <span class="code-font">{{ project.freelancer.username }}</span>
                                                 {% else %}
-                                                <span class="text-muted">Не назначен</span>
+                                                <span class="text-muted code-font">Не назначен</span>
                                                 {% endif %}
                                             </td>
-                                            <td class="text-muted">{{ project.created_at.strftime('%d.%m.%Y') }}</td>
+                                            <td class="text-muted code-font">{{ project.created_at.strftime('%d.%m.%Y') }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -160,30 +160,30 @@
 
                             <!-- Завершенные проекты -->
                             {% if user_projects_completed %}
-                            <h6 class="fw-bold mb-3 text-success">Завершенные проекты</h6>
+                            <h6 class="fw-bold mb-3 text-success code-font">Завершенные проекты</h6>
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Название</th>
-                                            <th>Бюджет</th>
-                                            <th>Исполнитель</th>
-                                            <th>Дата завершения</th>
+                                            <th class="code-font">Название</th>
+                                            <th class="code-font">Бюджет</th>
+                                            <th class="code-font">Исполнитель</th>
+                                            <th class="code-font">Дата завершения</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for project in user_projects_completed %}
                                         <tr>
-                                            <td>{{ project.title }}</td>
-                                            <td class="text-success fw-bold">{{ project.budget }} ₽</td>
+                                            <td class="code-font">{{ project.title }}</td>
+                                            <td class="text-success fw-bold text-glow">{{ project.budget }} ₽</td>
                                             <td>
                                                 {% if project.freelancer %}
-                                                {{ project.freelancer.username }}
+                                                <span class="code-font">{{ project.freelancer.username }}</span>
                                                 {% else %}
-                                                <span class="text-muted">Не назначен</span>
+                                                <span class="text-muted code-font">Не назначен</span>
                                                 {% endif %}
                                             </td>
-                                            <td class="text-muted">{{ project.completed_at.strftime('%d.%m.%Y') if project.completed_at else '-' }}</td>
+                                            <td class="text-muted code-font">{{ project.completed_at.strftime('%d.%m.%Y') if project.completed_at else '-' }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -194,8 +194,8 @@
                         <div class="text-center py-5">
                             <i class="bi bi-briefcase display-4 text-muted mb-3"></i>
                             <h5 class="text-muted">У вас пока нет проектов</h5>
-                            <p class="text-muted mb-4">Создайте первый проект и найдите исполнителя</p>
-                            <a href="{{ url_for('create_project') }}" class="btn btn-primary">
+                            <p class="text-muted mb-4 code-font">Создайте первый проект и найдите исполнителя</p>
+                            <a href="{{ url_for('create_project') }}" class="btn btn-primary glow">
                                 <i class="bi bi-plus-circle me-2"></i>Создать проект
                             </a>
                         </div>
@@ -204,40 +204,40 @@
 
                     <!-- Заказчик: Статистика -->
                     <div class="tab-pane fade" id="stats" role="tabpanel">
-                        <h5 class="fw-bold mb-4">Статистика заказчика</h5>
+                        <h5 class="fw-bold mb-4 text-glow">Статистика заказчика</h5>
 
                         <div class="row text-center mb-4">
                             <div class="col-md-4 mb-3">
                                 <div class="card bg-primary text-white">
                                     <div class="card-body">
-                                        <h3>{{ user_projects_active|length + user_projects_completed|length }}</h3>
-                                        <p class="mb-0">Всего проектов</p>
+                                        <h3 class="text-glow">{{ user_projects_active|length + user_projects_completed|length }}</h3>
+                                        <p class="mb-0 code-font">Всего проектов</p>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="card bg-success text-white">
                                     <div class="card-body">
-                                        <h3>{{ user_projects_completed|length }}</h3>
-                                        <p class="mb-0">Завершено</p>
+                                        <h3 class="text-glow">{{ user_projects_completed|length }}</h3>
+                                        <p class="mb-0 code-font">Завершено</p>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="card bg-info text-white">
                                     <div class="card-body">
-                                        <h3>{{ total_budget }} ₽</h3>
-                                        <p class="mb-0">Общий бюджет</p>
+                                        <h3 class="text-glow">{{ total_budget }} ₽</h3>
+                                        <p class="mb-0 code-font">Общий бюджет</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card">
+                        <div class="card bg-dark">
                             <div class="card-body">
-                                <h6 class="fw-bold mb-3">Рейтинг как заказчика</h6>
+                                <h6 class="fw-bold mb-3 code-font">Рейтинг как заказчика</h6>
                                 <div class="text-center">
-                                    <div class="display-4 text-warning mb-2">
+                                    <div class="display-4 text-warning mb-2 text-glow">
                                         {% if client_rating > 0 %}
                                             {{ "%.1f"|format(client_rating) }}/5
                                         {% else %}
@@ -254,7 +254,7 @@
                                                 {% endif %}
                                             {% endfor %}
                                         {% else %}
-                                            <span class="text-muted">Пока нет отзывов от исполнителей</span>
+                                            <span class="text-muted code-font">Пока нет отзывов от исполнителей</span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -265,32 +265,32 @@
                     {% else %}
                     <!-- Фрилансер: Работа -->
                     <div class="tab-pane fade show active" id="work" role="tabpanel">
-                        <h5 class="fw-bold mb-4">Моя работа</h5>
+                        <h5 class="fw-bold mb-4 text-glow">Моя работа</h5>
 
                         <!-- Проекты в работе -->
                         {% if freelancer_projects_active %}
-                        <h6 class="fw-bold mb-3 text-warning">Проекты в работе</h6>
+                        <h6 class="fw-bold mb-3 text-warning code-font">Проекты в работе</h6>
                         <div class="table-responsive mb-4">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Название</th>
-                                        <th>Бюджет</th>
-                                        <th>Заказчик</th>
-                                        <th>Дата начала</th>
+                                        <th class="code-font">Название</th>
+                                        <th class="code-font">Бюджет</th>
+                                        <th class="code-font">Заказчик</th>
+                                        <th class="code-font">Дата начала</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for project in freelancer_projects_active %}
                                     <tr>
                                         <td>
-                                            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="text-decoration-none">
+                                            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="text-decoration-none text-glow">
                                                 {{ project.title }}
                                             </a>
                                         </td>
-                                        <td class="text-success fw-bold">{{ project.budget }} ₽</td>
-                                        <td>{{ project.client.username }}</td>
-                                        <td class="text-muted">{{ project.created_at.strftime('%d.%m.%Y') }}</td>
+                                        <td class="text-success fw-bold text-glow">{{ project.budget }} ₽</td>
+                                        <td class="code-font">{{ project.client.username }}</td>
+                                        <td class="text-muted code-font">{{ project.created_at.strftime('%d.%m.%Y') }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -300,24 +300,24 @@
 
                         <!-- Выполненные проекты -->
                         {% if freelancer_projects_completed %}
-                        <h6 class="fw-bold mb-3 text-success">Выполненные проекты</h6>
+                        <h6 class="fw-bold mb-3 text-success code-font">Выполненные проекты</h6>
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Название</th>
-                                        <th>Бюджет</th>
-                                        <th>Заказчик</th>
-                                        <th>Дата завершения</th>
+                                        <th class="code-font">Название</th>
+                                        <th class="code-font">Бюджет</th>
+                                        <th class="code-font">Заказчик</th>
+                                        <th class="code-font">Дата завершения</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for project in freelancer_projects_completed %}
                                     <tr>
-                                        <td>{{ project.title }}</td>
-                                        <td class="text-success fw-bold">{{ project.budget }} ₽</td>
-                                        <td>{{ project.client.username }}</td>
-                                        <td class="text-muted">{{ project.completed_at.strftime('%d.%m.%Y') if project.completed_at else '-' }}</td>
+                                        <td class="code-font">{{ project.title }}</td>
+                                        <td class="text-success fw-bold text-glow">{{ project.budget }} ₽</td>
+                                        <td class="code-font">{{ project.client.username }}</td>
+                                        <td class="text-muted code-font">{{ project.completed_at.strftime('%d.%m.%Y') if project.completed_at else '-' }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -329,8 +329,8 @@
                         <div class="text-center py-5">
                             <i class="bi bi-inbox display-4 text-muted mb-3"></i>
                             <h5 class="text-muted">Нет проектов</h5>
-                            <p class="text-muted">Найдите подходящий проект и откликнитесь!</p>
-                            <a href="{{ url_for('projects') }}" class="btn btn-primary">
+                            <p class="text-muted code-font">Найдите подходящий проект и откликнитесь!</p>
+                            <a href="{{ url_for('projects') }}" class="btn btn-primary glow">
                                 <i class="bi bi-search me-2"></i>Найти проекты
                             </a>
                         </div>
@@ -339,25 +339,25 @@
 
                     <!-- Фрилансер: Отзывы -->
                     <div class="tab-pane fade" id="reviews" role="tabpanel">
-                        <h5 class="fw-bold mb-4">Отзывы от заказчиков</h5>
+                        <h5 class="fw-bold mb-4 text-glow">Отзывы от заказчиков</h5>
 
                         {% if freelancer_reviews %}
                             {% for review in freelancer_reviews %}
-                            <div class="card mb-3">
+                            <div class="card mb-3 border-warning">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
-                                            <h6 class="fw-bold mb-1">{{ review.project.title }}</h6>
-                                            <small class="text-muted">От {{ review.reviewer.username }}</small>
+                                            <h6 class="fw-bold mb-1 code-font">{{ review.project.title }}</h6>
+                                            <small class="text-muted code-font">От {{ review.reviewer.username }}</small>
                                         </div>
-                                        <div class="text-warning">
+                                        <div class="text-warning text-glow">
                                             {% for i in range(review.rating) %}⭐{% endfor %}
                                         </div>
                                     </div>
                                     {% if review.comment %}
-                                    <p class="mb-0">{{ review.comment }}</p>
+                                    <p class="mb-0 text-muted">{{ review.comment }}</p>
                                     {% endif %}
-                                    <small class="text-muted">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
+                                    <small class="text-muted code-font">{{ review.created_at.strftime('%d.%m.%Y') }}</small>
                                 </div>
                             </div>
                             {% endfor %}
@@ -365,7 +365,7 @@
                         <div class="text-center py-5">
                             <i class="bi bi-star display-4 text-muted mb-3"></i>
                             <h5 class="text-muted">Пока нет отзывов</h5>
-                            <p class="text-muted">Завершите проекты и получайте отзывы от заказчиков!</p>
+                            <p class="text-muted code-font">Завершите проекты и получайте отзывы от заказчиков!</p>
                         </div>
                         {% endif %}
                     </div>
@@ -380,34 +380,34 @@
         <!-- Статистика -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">
+                <h5 class="fw-bold mb-3 text-glow">
                     <i class="bi bi-graph-up text-primary me-2"></i>Статистика
                 </h5>
                 <div class="row text-center">
                     {% if current_user.is_client %}
                     <div class="col-6 mb-3">
-                        <div class="p-3 bg-light rounded">
-                            <h4 class="text-primary mb-1">{{ user_projects_active|length }}</h4>
-                            <small class="text-muted">Активных</small>
+                        <div class="p-3 bg-dark rounded">
+                            <h4 class="text-primary mb-1 text-glow">{{ user_projects_active|length }}</h4>
+                            <small class="text-muted code-font">Активных</small>
                         </div>
                     </div>
                     <div class="col-6 mb-3">
-                        <div class="p-3 bg-light rounded">
-                            <h4 class="text-success mb-1">{{ user_projects_completed|length }}</h4>
-                            <small class="text-muted">Завершено</small>
+                        <div class="p-3 bg-dark rounded">
+                            <h4 class="text-success mb-1 text-glow">{{ user_projects_completed|length }}</h4>
+                            <small class="text-muted code-font">Завершено</small>
                         </div>
                     </div>
                     {% else %}
                     <div class="col-6 mb-3">
-                        <div class="p-3 bg-light rounded">
-                            <h4 class="text-primary mb-1">{{ freelancer_projects_active|length }}</h4>
-                            <small class="text-muted">В работе</small>
+                        <div class="p-3 bg-dark rounded">
+                            <h4 class="text-primary mb-1 text-glow">{{ freelancer_projects_active|length }}</h4>
+                            <small class="text-muted code-font">В работе</small>
                         </div>
                     </div>
                     <div class="col-6 mb-3">
-                        <div class="p-3 bg-light rounded">
-                            <h4 class="text-success mb-1">{{ freelancer_projects_completed|length }}</h4>
-                            <small class="text-muted">Выполнено</small>
+                        <div class="p-3 bg-dark rounded">
+                            <h4 class="text-success mb-1 text-glow">{{ freelancer_projects_completed|length }}</h4>
+                            <small class="text-muted code-font">Выполнено</small>
                         </div>
                     </div>
                     {% endif %}
@@ -418,26 +418,26 @@
         <!-- Детали профиля -->
         <div class="card">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">
+                <h5 class="fw-bold mb-3 text-glow">
                     <i class="bi bi-info-circle text-primary me-2"></i>Детали профиля
                 </h5>
 
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <span class="text-muted">Тип аккаунта:</span>
-                        <strong>
+                        <span class="text-muted code-font">Тип аккаунта:</span>
+                        <strong class="code-font">
                             {% if current_user.is_client %}
-                                🎯 Заказчик
+                                🎯 ЗАКАЗЧИК
                             {% else %}
-                                💻 Фрилансер
+                                💻 ФРИЛАНСЕР
                             {% endif %}
                         </strong>
                     </div>
 
                     {% if not current_user.is_client and current_user.profile %}
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <span class="text-muted">Ставка в час:</span>
-                        <strong class="text-success">
+                        <span class="text-muted code-font">Ставка в час:</span>
+                        <strong class="text-success text-glow">
                             {% if current_user.profile.hourly_rate %}
                                 {{ current_user.profile.hourly_rate }} ₽
                             {% else %}
@@ -447,19 +447,19 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <span class="text-muted">Опыт:</span>
-                        <strong>{{ current_user.profile.experience or 'Не указан' }}</strong>
+                        <span class="text-muted code-font">Опыт:</span>
+                        <strong class="code-font">{{ current_user.profile.experience or 'Не указан' }}</strong>
                     </div>
                     {% endif %}
 
                     <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                        <span class="text-muted">Имя пользователя:</span>
-                        <strong>@{{ current_user.username }}</strong>
+                        <span class="text-muted code-font">Имя пользователя:</span>
+                        <strong class="code-font">@{{ current_user.username }}</strong>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center py-2">
-                        <span class="text-muted">Email:</span>
-                        <strong>{{ current_user.email }}</strong>
+                        <span class="text-muted code-font">Email:</span>
+                        <strong class="code-font">{{ current_user.email }}</strong>
                     </div>
                 </div>
 
@@ -470,7 +470,7 @@
                         <i class="bi bi-pencil me-2"></i>Редактировать профиль
                     </button>
                     {% else %}
-                    <a href="{{ url_for('create_profile') }}" class="btn btn-primary">
+                    <a href="{{ url_for('create_profile') }}" class="btn btn-primary glow">
                         <i class="bi bi-person-plus me-2"></i>Создать профиль
                     </a>
                     {% endif %}
@@ -489,7 +489,7 @@
 .user-avatar {
     width: 80px;
     height: 80px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -497,19 +497,32 @@
     color: white;
     font-weight: 600;
     font-size: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.nav-tabs .nav-link {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    margin-bottom: -1px;
 }
 
 .nav-tabs .nav-link.active {
-    background-color: #f8f9fa;
-    border-bottom-color: #f8f9fa;
+    background: var(--bg-primary);
+    border-color: var(--border-color) var(--border-color) var(--bg-primary);
+    color: var(--accent-primary);
+    font-weight: 600;
 }
 
-.card {
-    transition: transform 0.2s;
+.card.bg-dark {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color);
 }
 
-.card:hover {
-    transform: translateY(-2px);
+.p-3.bg-dark {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
 }
 </style>
 {% endblock %}
