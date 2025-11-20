@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4 border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="fw-bold mb-0 text-glow">
+                        <i class="bi bi-people text-primary me-2"></i>Управление пользователями
+                    </h2>
+                    <div class="badge bg-primary fs-6 code-font">{{ users|length }} пользователей</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Поиск и фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" name="search" 
+                           placeholder="Поиск по имени пользователя или email..." value="{{ request.args.get('search', '') }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100 glow">
+                    <i class="bi bi-funnel me-2"></i>Найти
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Таблица пользователей -->
+<div class="card">
+    <div class="card-body">
+        {% if users %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="code-font">ID</th>
+                        <th class="code-font">Пользователь</th>
+                        <th class="code-font">Email</th>
+                        <th class="code-font">Тип</th>
+                        <th class="code-font">Статус</th>
+                        <th class="code-font">Дата регистрации</th>
+                        <th class="code-font">Проекты</th>
+                        <th class="code-font">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr class="{% if not user.is_active %}table-danger{% endif %}">
+                        <td><strong class="code-font">#{{ user.id }}</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-2" style="width: 35px; height: 35px; font-size: 0.8rem;">
+                                    {{ user.username[0] }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold code-font">{{ user.username }}</div>
+                                    {% if user.is_moderator %}
+                                    <small class="badge bg-warning code-font">МОДЕРАТОР</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="code-font">{{ user.email }}</td>
+                        <td>
+                            <span class="badge bg-{% if user.is_client %}success{% else %}info{% endif %} code-font">
+                                {% if user.is_client %}ЗАКАЗЧИК{% else %}ФРИЛАНСЕР{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %} code-font">
+                                {% if user.is_active %}АКТИВЕН{% else %}ЗАБЛОКИРОВАН{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-muted code-font">{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                        <td class="code-font">
+                            {% if user.is_client %}
+                                {{ user.created_projects|length }}
+                            {% else %}
+                                {{ user.assigned_projects|length }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                {% if not user.is_moderator %}
+                                    <a href="{{ url_for('admin_toggle_ban_user', user_id=user.id) }}" 
+                                       class="btn btn-{% if user.is_active %}warning{% else %}success{% endif %}"
+                                       onclick="return confirm('{% if user.is_active %}Заблокировать{% else %}Разблокировать{% endif %} пользователя {{ user.username }}?')">
+                                        <i class="bi bi-{% if user.is_active %}lock{% else %}unlock{% endif %}"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin_delete_user', user_id=user.id) }}" 
+                                       class="btn btn-danger"
+                                       onclick="return confirm('ВНИМАНИЕ! Это удалит пользователя {{ user.username }} и все связанные данные. Продолжить?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted code-font">Системный</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-people display-4 mb-3"></i>
+            <h3>Пользователи не найдены</h3>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 0.8rem;
+}
+
+.table-danger {
+    background: rgba(220, 53, 69, 0.1);
+}
+</style>
+{% endblock %}
