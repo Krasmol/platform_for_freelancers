@@ -3,13 +3,13 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="fw-bold mb-0">
+                    <h2 class="fw-bold mb-0 text-glow">
                         <i class="bi bi-headset text-primary me-2"></i>Центр поддержки
                     </h2>
-                    <a href="{{ url_for('create_support_ticket') }}" class="btn btn-primary">
+                    <a href="{{ url_for('create_support_ticket') }}" class="btn btn-primary glow">
                         <i class="bi bi-plus-circle me-2"></i>Новое обращение
                     </a>
                 </div>
@@ -17,37 +17,37 @@
                 <!-- Быстрые действия -->
                 <div class="row mb-5">
                     <div class="col-md-4 mb-3">
-                        <div class="card text-center h-100">
+                        <div class="card text-center h-100 bg-dark">
                             <div class="card-body">
                                 <div class="feature-icon mx-auto mb-3" style="width: 50px; height: 50px;">
                                     <i class="bi bi-question-circle"></i>
                                 </div>
-                                <h6>База знаний</h6>
-                                <p class="text-muted small">Ответы на частые вопросы</p>
+                                <h6 class="code-font">База знаний</h6>
+                                <p class="text-muted small code-font">Ответы на частые вопросы</p>
                                 <button class="btn btn-outline-primary btn-sm" onclick="showKnowledgeBase()">Открыть</button>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <div class="card text-center h-100">
+                        <div class="card text-center h-100 bg-dark">
                             <div class="card-body">
-                                <div class="feature-icon mx-auto mb-3" style="width: 50px; height: 50px; background: #10b981;">
+                                <div class="feature-icon mx-auto mb-3" style="width: 50px; height: 50px; background: var(--success);">
                                     <i class="bi bi-chat-dots"></i>
                                 </div>
-                                <h6>Задать вопрос</h6>
-                                <p class="text-muted small">Напишите в поддержку</p>
+                                <h6 class="code-font">Задать вопрос</h6>
+                                <p class="text-muted small code-font">Напишите в поддержку</p>
                                 <a href="{{ url_for('create_support_ticket') }}" class="btn btn-outline-success btn-sm">Написать</a>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <div class="card text-center h-100">
+                        <div class="card text-center h-100 bg-dark">
                             <div class="card-body">
-                                <div class="feature-icon mx-auto mb-3" style="width: 50px; height: 50px; background: #f59e0b;">
+                                <div class="feature-icon mx-auto mb-3" style="width: 50px; height: 50px; background: var(--warning);">
                                     <i class="bi bi-flag"></i>
                                 </div>
-                                <h6>Пожаловаться</h6>
-                                <p class="text-muted small">Сообщить о нарушении</p>
+                                <h6 class="code-font">Пожаловаться</h6>
+                                <p class="text-muted small code-font">Сообщить о нарушении</p>
                                 <button class="btn btn-outline-warning btn-sm" onclick="showReportForm()">Пожаловаться</button>
                             </div>
                         </div>
@@ -56,32 +56,32 @@
 
                 <!-- Мои обращения -->
                 <div>
-                    <h5 class="fw-bold mb-3">Мои обращения</h5>
+                    <h5 class="fw-bold mb-3 text-glow">Мои обращения</h5>
 
                     {% if tickets %}
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>Тема</th>
-                                    <th>Категория</th>
-                                    <th>Статус</th>
-                                    <th>Приоритет</th>
-                                    <th>Дата</th>
-                                    <th>Действия</th>
+                                    <th class="code-font">Тема</th>
+                                    <th class="code-font">Категория</th>
+                                    <th class="code-font">Статус</th>
+                                    <th class="code-font">Приоритет</th>
+                                    <th class="code-font">Дата</th>
+                                    <th class="code-font">Действия</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for ticket in tickets %}
                                 <tr>
                                     <td>
-                                        <a href="{{ url_for('support_ticket', ticket_id=ticket.id) }}" class="text-decoration-none fw-bold">
+                                        <a href="{{ url_for('support_ticket', ticket_id=ticket.id) }}" class="text-decoration-none text-glow">
                                             {{ ticket.subject }}
                                         </a>
                                     </td>
-                                    <td>{{ ticket.category }}</td>
+                                    <td class="code-font">{{ ticket.category }}</td>
                                     <td>
-                                        <span class="badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %}">
+                                        <span class="badge bg-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% elif ticket.status == 'resolved' %}success{% else %}secondary{% endif %} code-font">
                                             {% if ticket.status == 'open' %}Открыт
                                             {% elif ticket.status == 'in_progress' %}В работе
                                             {% elif ticket.status == 'resolved' %}Решен
@@ -89,11 +89,11 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-{% if ticket.priority == 'low' %}success{% elif ticket.priority == 'medium' %}warning{% elif ticket.priority == 'high' %}danger{% else %}dark{% endif %}">
+                                        <span class="badge bg-{% if ticket.priority == 'low' %}success{% elif ticket.priority == 'medium' %}warning{% elif ticket.priority == 'high' %}danger{% else %}dark{% endif %} code-font">
                                             {{ ticket.priority }}
                                         </span>
                                     </td>
-                                    <td class="text-muted">{{ ticket.created_at.strftime('%d.%m.%Y') }}</td>
+                                    <td class="text-muted code-font">{{ ticket.created_at.strftime('%d.%m.%Y') }}</td>
                                     <td>
                                         <a href="{{ url_for('support_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye"></i>
@@ -108,8 +108,8 @@
                     <div class="text-center py-5 text-muted">
                         <i class="bi bi-inbox display-4 mb-3"></i>
                         <h5>У вас пока нет обращений</h5>
-                        <p class="mb-4">Создайте первое обращение если у вас возникли вопросы или проблемы</p>
-                        <a href="{{ url_for('create_support_ticket') }}" class="btn btn-primary">
+                        <p class="mb-4 code-font">Создайте первое обращение если у вас возникли вопросы или проблемы</p>
+                        <a href="{{ url_for('create_support_ticket') }}" class="btn btn-primary glow">
                             <i class="bi bi-plus-circle me-2"></i>Создать обращение
                         </a>
                     </div>
@@ -124,19 +124,19 @@
         <!-- Контакты поддержки -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Контакты поддержки</h5>
+                <h5 class="fw-bold mb-3 text-glow">Контакты поддержки</h5>
                 <div class="mb-3">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-envelope text-primary me-2"></i>
-                        <span>support@freelancehub.ru</span>
+                        <span class="code-font">support@freelancehub.ru</span>
                     </div>
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-telegram text-info me-2"></i>
-                        <span>@freelancehub_support</span>
+                        <span class="code-font">@freelancehub_support</span>
                     </div>
                     <div class="d-flex align-items-center">
                         <i class="bi bi-clock text-warning me-2"></i>
-                        <span>Круглосуточно, 7 дней в неделю</span>
+                        <span class="code-font">Круглосуточно, 7 дней в неделю</span>
                     </div>
                 </div>
             </div>
@@ -145,23 +145,23 @@
         <!-- Статистика -->
         <div class="card">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Статистика обращений</h5>
+                <h5 class="fw-bold mb-3 text-glow">Статистика обращений</h5>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Всего:</span>
-                        <strong>{{ tickets|length }}</strong>
+                        <span class="code-font">Всего:</span>
+                        <strong class="text-info code-font">{{ tickets|length }}</strong>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Открытые:</span>
-                        <strong>{{ tickets|selectattr('status', 'equalto', 'open')|list|length }}</strong>
+                        <span class="code-font">Открытые:</span>
+                        <strong class="text-warning code-font">{{ tickets|selectattr('status', 'equalto', 'open')|list|length }}</strong>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>В работе:</span>
-                        <strong>{{ tickets|selectattr('status', 'equalto', 'in_progress')|list|length }}</strong>
+                        <span class="code-font">В работе:</span>
+                        <strong class="text-info code-font">{{ tickets|selectattr('status', 'equalto', 'in_progress')|list|length }}</strong>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>Решено:</span>
-                        <strong>{{ tickets|selectattr('status', 'equalto', 'resolved')|list|length }}</strong>
+                        <span class="code-font">Решено:</span>
+                        <strong class="text-success code-font">{{ tickets|selectattr('status', 'equalto', 'resolved')|list|length }}</strong>
                     </div>
                 </div>
             </div>
@@ -171,12 +171,26 @@
 
 <script>
 function showKnowledgeBase() {
-    alert('База знаний находится в разработке');
+    alert('📚 База знаний находится в разработке');
 }
 
 function showReportForm() {
-    // Перенаправляем на создание тикета с предзаполненной категорией
     window.location.href = "{{ url_for('create_support_ticket') }}";
 }
 </script>
+
+<style>
+.card.bg-dark {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color);
+}
+
+.feature-icon {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .feature-icon {
+    transform: scale(1.1);
+}
+</style>
 {% endblock %}
