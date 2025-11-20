@@ -3,10 +3,10 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="fw-bold mb-0">
+                    <h2 class="fw-bold mb-0 text-glow">
                         <i class="bi bi-bell text-primary me-2"></i>Уведомления
                     </h2>
                     {% if notifications %}
@@ -22,7 +22,7 @@
                 <div class="notifications-list">
                     {% if notifications %}
                         {% for notification in notifications %}
-                        <div class="notification-item card mb-3 border-start border-{{ get_notification_color(notification.notification_type) }} border-4 {% if not notification.is_read %}notification-unread{% endif %}">
+                        <div class="notification-item card mb-3 border-start border-{{ get_notification_color(notification.notification_type) }} border-4 {% if not notification.is_read %}notification-unread glow{% endif %}">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="d-flex align-items-center">
@@ -30,15 +30,15 @@
                                             <i class="bi {{ get_notification_icon(notification.notification_type) }}"></i>
                                         </div>
                                         <div>
-                                            <h6 class="fw-bold mb-1">{{ notification.title }}</h6>
+                                            <h6 class="fw-bold mb-1 code-font">{{ notification.title }}</h6>
                                             <p class="text-muted mb-1">{{ notification.message }}</p>
-                                            <small class="text-muted">
+                                            <small class="text-muted code-font">
                                                 <i class="bi bi-clock me-1"></i>{{ notification.created_at.strftime('%d.%m.%Y %H:%M') }}
                                             </small>
                                         </div>
                                     </div>
                                     {% if not notification.is_read %}
-                                    <span class="badge bg-primary">Новое</span>
+                                    <span class="badge bg-primary code-font">NEW</span>
                                     {% endif %}
                                 </div>
                                 <div class="mt-3">
@@ -53,7 +53,7 @@
                         <div class="text-center py-5">
                             <i class="bi bi-bell-slash display-4 text-muted mb-3"></i>
                             <h3 class="text-muted">Уведомлений пока нет</h3>
-                            <p class="text-muted">Здесь будут появляться уведомления о новых откликах, сообщениях и действиях на платформе</p>
+                            <p class="text-muted code-font">Здесь будут появляться уведомления о новых откликах, сообщениях и действиях на платформе</p>
                         </div>
                     {% endif %}
                 </div>
@@ -65,15 +65,17 @@
 <style>
 .notification-item {
     transition: transform 0.2s, box-shadow 0.2s;
+    background: var(--bg-card);
 }
 
 .notification-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 .notification-unread {
-    background-color: #f0f9ff;
+    background: rgba(99, 102, 241, 0.05);
+    border-left-width: 6px !important;
 }
 
 .notification-icon {
@@ -83,5 +85,16 @@
     align-items: center;
     justify-content: center;
 }
+
+.border-primary { border-color: var(--accent-primary) !important; }
+.border-info { border-color: var(--info) !important; }
+.border-success { border-color: var(--success) !important; }
+.border-warning { border-color: var(--warning) !important; }
+.border-secondary { border-color: var(--text-muted) !important; }
+
+.bg-primary { background: var(--accent-primary) !important; }
+.bg-info { background: var(--info) !important; }
+.bg-success { background: var(--success) !important; }
+.bg-warning { background: var(--warning) !important; }
 </style>
 {% endblock %}
