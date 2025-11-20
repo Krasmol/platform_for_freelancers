@@ -1028,6 +1028,51 @@ def notifications():
     return render_template('notifications.html', notifications=user_notifications)
 
 
+# удаление уведомления
+@app.route('/notifications/delete/<int:notification_id>')
+@login_required
+def delete_notification(notification_id):
+    notification = Notification.query.filter_by(
+        id=notification_id,
+        user_id=current_user.id
+    ).first_or_404()
+
+    db.session.delete(notification)
+    db.session.commit()
+
+    flash('Уведомление удалено')
+    return redirect(url_for('notifications'))
+
+
+# удаление всех прочитанных уведомлений
+@app.route('/notifications/delete_read')
+@login_required
+def delete_read_notifications():
+    Notification.query.filter_by(
+        user_id=current_user.id,
+        is_read=True
+    ).delete()
+
+    db.session.commit()
+
+    flash('Все прочитанные уведомления удалены')
+    return redirect(url_for('notifications'))
+
+
+# удаление всех уведомлений
+@app.route('/notifications/delete_all')
+@login_required
+def delete_all_notifications():
+    Notification.query.filter_by(
+        user_id=current_user.id
+    ).delete()
+
+    db.session.commit()
+
+    flash('Все уведомления удалены')
+    return redirect(url_for('notifications'))
+
+
 @app.route('/notifications/read/<int:notification_id>')
 @login_required
 def mark_notification_read(notification_id):
