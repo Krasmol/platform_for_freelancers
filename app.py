@@ -60,6 +60,7 @@ class Project(db.Model):
     freelancer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), default='open')
 
     client = db.relationship('User', foreign_keys=[client_id], backref='created_projects')
     freelancer = db.relationship('User', foreign_keys=[freelancer_id], backref='assigned_projects')
@@ -272,7 +273,7 @@ def user_profile(user_id):
                                total_budget=total_budget,
                                client_rating=client_rating)
     else:
-        # Для фрилансера
+        # для фрилансера
         freelancer_projects_active = Project.query.filter(
             Project.freelancer_id == user.id,
             Project.status == 'in_progress'
@@ -299,7 +300,7 @@ def user_profile(user_id):
 def create_review(project_id):
     project = Project.query.get_or_404(project_id)
 
-    # Проверяем, что пользователь - заказчик и проект завершен
+    # проверяем что это заказчик и проект завершен
     if current_user.id != project.client_id:
         flash('Только заказчик может оставить отзыв')
         return redirect(url_for('project_detail', project_id=project_id))
@@ -308,7 +309,7 @@ def create_review(project_id):
         flash('Можно оставить отзыв только для завершенных проектов')
         return redirect(url_for('project_detail', project_id=project_id))
 
-    # Проверяем, что отзыв еще не оставлен
+    # проверка, что отзыв еще не оставлен
     existing_review = Review.query.filter_by(project_id=project_id, reviewer_id=current_user.id).first()
     if existing_review:
         flash('Вы уже оставили отзыв по этому проекту')
@@ -327,7 +328,7 @@ def create_review(project_id):
         )
         db.session.add(review)
 
-        # Уведомление фрилансеру
+        # уведомляем фрилансера
         notification = Notification(
             user_id=project.freelancer_id,
             title='Новый отзыв!',
@@ -345,7 +346,7 @@ def create_review(project_id):
     return render_template('create_review.html', project=project)
 
 
-# Функция для получения среднего рейтинга фрилансера
+# расчет рейтинга фрилансера
 def get_freelancer_rating(freelancer_id):
     reviews = Review.query.filter_by(freelancer_id=freelancer_id).all()
     if not reviews:
@@ -459,6 +460,211 @@ def create_moderator_if_needed():
             print("✅ Права модератора обновлены")
 
 
+# Маршруты управления пользователями для модератора
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    if not current_user.is_moderator:
+        flash('Доступ запрещен')
+        return redirect(url_for('index'))
+
+    users = User.query.order_by(User.created_at.desc()).all()
+    return render_template('admin_users.html', users=users)
+
+
+@app.route('/admin/user/<int:user_id>/toggle_ban')
+@login_required
+def admin_toggle_ban_user(user_id):
+    if not current_user.is_moderator:
+        flash('Доступ запрещен')
+        return redirect(url_for('index'))
+
+    user = User.query.get_or_404(user_id)
+
+    # Не позволяем банить других модераторов
+    if user.is_moderator:
+        flash('Нельзя заблокировать другого модератора')
+        return redirect(url_for('admin_users'))
+
+    user.is_active = not user.is_active
+    status = "заблокирован" if not user.is_active else "разблокирован"
+
+    # Создаем уведомление для пользователя
+    if not user.is_active:  # Если пользователь заблокирован
+        notification = Notification(
+            user_id=user.id,
+            title='Аккаунт заблокирован',
+            message='Ваш аккаунт был заблокирован модератором. Для выяснения причин обратитесь в поддержку.',
+            notification_type='warning'
+        )
+        db.session.add(notification)
+
+    db.session.commit()
+
+    flash(f'Пользователь {user.username} {status}')
+    return redirect(url_for('admin_users'))
+
+
+@app.route('/admin/user/<int:user_id>/delete')
+@login_required
+def admin_delete_user(user_id):
+    if not current_user.is_moderator:
+        flash('Доступ запрещен')
+        return redirect(url_for('index'))
+
+    user = User.query.get_or_404(user_id)
+
+    # Не позволяем удалять других модераторов
+    if user.is_moderator:
+        flash('Нельзя удалить другого модератора')
+        return redirect(url_for('admin_users'))
+
+    # Собираем информацию для лога
+    username = user.username
+    projects_count = Project.query.filter_by(client_id=user.id).count()
+    responses_count = ProjectResponse.query.filter_by(freelancer_id=user.id).count()
+
+    # Удаляем связанные данные пользователя
+    # 1. Уведомления
+    Notification.query.filter_by(user_id=user.id).delete()
+
+    # 2. Сообщения
+    Message.query.filter_by(sender_id=user.id).delete()
+    Message.query.filter_by(receiver_id=user.id).delete()
+
+    # 3. Отклики на проекты
+    ProjectResponse.query.filter_by(freelancer_id=user.id).delete()
+
+    # 4. Профиль
+    if user.profile:
+        db.session.delete(user.profile)
+
+    # 5. Отзывы
+    Review.query.filter_by(reviewer_id=user.id).delete()
+    Review.query.filter_by(freelancer_id=user.id).delete()
+
+    # 6. Обращения в поддержку
+    SupportTicket.query.filter_by(user_id=user.id).delete()
+    TicketMessage.query.filter_by(user_id=user.id).delete()
+
+    # 7. Проекты пользователя (если он заказчик)
+    user_projects = Project.query.filter_by(client_id=user.id).all()
+    for project in user_projects:
+        # Удаляем отклики на эти проекты
+        ProjectResponse.query.filter_by(project_id=project.id).delete()
+        # Удаляем отзывы на эти проекты
+        Review.query.filter_by(project_id=project.id).delete()
+        # Удаляем проект
+        db.session.delete(project)
+
+    # 8. Удаляем самого пользователя
+    db.session.delete(user)
+    db.session.commit()
+
+    flash(f'Пользователь {username} удален (проектов: {projects_count}, откликов: {responses_count})')
+    return redirect(url_for('admin_users'))
+
+
+# Маршруты управления проектами для модератора
+@app.route('/admin/projects')
+@login_required
+def admin_projects():
+    if not current_user.is_moderator:
+        flash('Доступ запрещен')
+        return redirect(url_for('index'))
+
+    status_filter = request.args.get('status', 'all')
+    search = request.args.get('search', '')
+
+    query = Project.query
+
+    if status_filter != 'all':
+        query = query.filter_by(status=status_filter)
+
+    if search:
+        query = query.filter(Project.title.contains(search) | Project.description.contains(search))
+
+    projects = query.order_by(Project.created_at.desc()).all()
+    return render_template('admin_projects.html', projects=projects, status_filter=status_filter, search=search)
+
+
+@app.route('/admin/project/<int:project_id>/delete')
+@login_required
+def admin_delete_project(project_id):
+    if not current_user.is_moderator:
+        flash('Доступ запрещен')
+        return redirect(url_for('index'))
+
+    project = Project.query.get_or_404(project_id)
+
+    # Собираем информацию для уведомления
+    project_title = project.title
+    client_username = project.client.username
+
+    # Удаляем связанные данные проекта
+    # 1. Отклики на проект
+    ProjectResponse.query.filter_by(project_id=project_id).delete()
+
+    # 2. Отзывы на проект
+    Review.query.filter_by(project_id=project_id).delete()
+
+    # 3. Уведомления, связанные с проектом
+    Notification.query.filter_by(related_id=project_id).delete()
+
+    # 4. Удаляем сам проект
+    db.session.delete(project)
+    db.session.commit()
+
+    # Создаем уведомление для владельца проекта
+    notification = Notification(
+        user_id=project.client_id,
+        title='Проект удален модератором',
+        message=f'Ваш проект "{project_title}" был удален модератором за нарушение правил платформы.',
+        notification_type='warning'
+    )
+    db.session.add(notification)
+    db.session.commit()
+
+    flash(f'Проект "{project_title}" (автор: {client_username}) удален')
+    return redirect(url_for('admin_projects'))
+
+
+@app.route('/admin/project/<int:project_id>/toggle_status')
+@login_required
+def admin_toggle_project_status(project_id):
+    if not current_user.is_moderator:
+        flash('Доступ запрещен')
+        return redirect(url_for('index'))
+
+    project = Project.query.get_or_404(project_id)
+
+    # Переключаем статус проекта
+    if project.status == 'open':
+        project.status = 'hidden'
+        status_msg = "скрыт"
+    elif project.status == 'hidden':
+        project.status = 'open'
+        status_msg = "восстановлен"
+    else:
+        flash('Нельзя изменить статус проекта в работе или завершенного')
+        return redirect(url_for('admin_projects'))
+
+    db.session.commit()
+
+    # Уведомление владельцу проекта
+    notification = Notification(
+        user_id=project.client_id,
+        title=f'Проект {status_msg}',
+        message=f'Ваш проект "{project.title}" был {status_msg} модератором.',
+        notification_type='warning' if status_msg == 'скрыт' else 'system'
+    )
+    db.session.add(notification)
+    db.session.commit()
+
+    flash(f'Проект "{project.title}" {status_msg}')
+    return redirect(url_for('admin_projects'))
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -504,7 +710,7 @@ def create_profile():
         db.session.add(profile)
         db.session.commit()
 
-        # Уведомление о создании профиля (только один раз)
+        # уведомление о создании профиля
         profile_notification = Notification(
             user_id=current_user.id,
             title='Профиль создан!',
@@ -523,12 +729,12 @@ def create_profile():
 @app.route('/profile')
 @login_required
 def view_profile():
-    # Для фрилансеров без профиля - редирект на создание
+    # для фрилансеров без профиля - редирект на создание
     if not current_user.is_client and not current_user.profile:
         return redirect(url_for('create_profile'))
 
     if current_user.is_client:
-        # Для заказчика
+        # для заказчика
         user_projects_active = Project.query.filter(
             Project.client_id == current_user.id,
             Project.status.in_(['open', 'in_progress'])
@@ -539,10 +745,10 @@ def view_profile():
             Project.status == 'completed'
         ).order_by(Project.completed_at.desc()).all()
 
-        # Статистика заказчика
+        # статистика заказчика
         total_budget = sum(project.budget for project in user_projects_completed)
 
-        # Рейтинг заказчика (из отзывов фрилансеров)
+        # рейтинг заказчика
         client_reviews = Review.query.join(Project).filter(
             Project.client_id == current_user.id
         ).all()
@@ -554,7 +760,7 @@ def view_profile():
                                total_budget=total_budget,
                                client_rating=client_rating)
     else:
-        # Для фрилансера (старый код)
+        # для фрилансера
         freelancer_projects_active = Project.query.filter(
             Project.freelancer_id == current_user.id,
             Project.status == 'in_progress'
@@ -580,9 +786,13 @@ def view_profile():
 def projects():
     category = request.args.get('category')
     search = request.args.get('search')
-    status_filter = request.args.get('status', 'open')  # Новый фильтр
+    status_filter = request.args.get('status', 'open')
 
     query = Project.query
+
+    # для обычных пользователей скрываем проекты со статусом 'скрытые'
+    if not current_user.is_authenticated or not current_user.is_moderator:
+        query = query.filter(Project.status != 'hidden')
 
     # фильтр по статусу
     if status_filter == 'open':
@@ -620,7 +830,7 @@ def create_project():
         db.session.add(project)
         db.session.commit()
 
-        # Уведомление о создании проекта
+        # уведомление о создании проекта
         project_notification = Notification(
             user_id=current_user.id,
             title='Проект опубликован!',
@@ -714,7 +924,7 @@ def complete_project(project_id):
     project.status = 'completed'
     project.completed_at = datetime.now(timezone.utc)
 
-    # Уведомление второй стороне
+    # уведомление второй стороне
     other_user_id = project.freelancer_id if current_user.id == project.client_id else project.client_id
     notification = Notification(
         user_id=other_user_id,
@@ -736,14 +946,14 @@ def complete_project(project_id):
 def cancel_project(project_id):
     project = Project.query.get_or_404(project_id)
 
-    # Только владелец может отменить проект
+    # только владелец может отменить проект
     if project.client_id != current_user.id:
         flash('Доступ запрещен')
         return redirect(url_for('project_detail', project_id=project_id))
 
     project.status = 'cancelled'
 
-    # Уведомление фрилансеру, если он был назначен
+    # уведомление фрилансеру, если он был назначен
     if project.freelancer_id:
         notification = Notification(
             user_id=project.freelancer_id,
@@ -1407,4 +1617,3 @@ if __name__ == '__main__':
 
     print("🚀 Запуск приложения...")
     app.run(debug=True, port=5001, host='0.0.0.0')
-
