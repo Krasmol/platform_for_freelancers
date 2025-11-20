@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4 border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="fw-bold mb-0 text-glow">
+                        <i class="bi bi-briefcase text-primary me-2"></i>Управление проектами
+                    </h2>
+                    <div class="badge bg-primary fs-6 code-font">{{ projects|length }} проектов</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-end">
+            <div class="col-md-6">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0" name="search" 
+                                   placeholder="Поиск проектов..." value="{{ search }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100 glow">
+                            <i class="bi bi-search me-2"></i>Найти
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <div class="btn-group w-100">
+                    <a href="{{ url_for('admin_projects', status='all') }}" 
+                       class="btn btn-outline-primary {% if status_filter == 'all' %}active{% endif %}">
+                        Все
+                    </a>
+                    <a href="{{ url_for('admin_projects', status='open') }}" 
+                       class="btn btn-outline-success {% if status_filter == 'open' %}active{% endif %}">
+                        Открытые
+                    </a>
+                    <a href="{{ url_for('admin_projects', status='hidden') }}" 
+                       class="btn btn-outline-warning {% if status_filter == 'hidden' %}active{% endif %}">
+                        Скрытые
+                    </a>
+                    <a href="{{ url_for('admin_projects', status='in_progress') }}" 
+                       class="btn btn-outline-info {% if status_filter == 'in_progress' %}active{% endif %}">
+                        В работе
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Таблица проектов -->
+<div class="card">
+    <div class="card-body">
+        {% if projects %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="code-font">ID</th>
+                        <th class="code-font">Название</th>
+                        <th class="code-font">Автор</th>
+                        <th class="code-font">Бюджет</th>
+                        <th class="code-font">Статус</th>
+                        <th class="code-font">Категория</th>
+                        <th class="code-font">Дата создания</th>
+                        <th class="code-font">Исполнитель</th>
+                        <th class="code-font">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr class="{% if project.status == 'hidden' %}table-warning{% endif %}">
+                        <td><strong class="code-font">#{{ project.id }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('project_detail', project_id=project.id) }}" 
+                               class="text-decoration-none fw-bold text-glow">
+                                {{ project.title }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-2" style="width: 30px; height: 30px; font-size: 0.7rem;">
+                                    {{ project.client.username[0] }}
+                                </div>
+                                <span class="code-font">{{ project.client.username }}</span>
+                            </div>
+                        </td>
+                        <td class="text-success fw-bold text-glow">{{ project.budget }} ₽</td>
+                        <td>
+                            <span class="badge bg-{% if project.status == 'open' %}success
+                                                {% elif project.status == 'hidden' %}warning
+                                                {% elif project.status == 'in_progress' %}info
+                                                {% elif project.status == 'completed' %}secondary
+                                                {% else %}danger{% endif %} code-font">
+                                {% if project.status == 'open' %}Открыт
+                                {% elif project.status == 'hidden' %}Скрыт
+                                {% elif project.status == 'in_progress' %}В работе
+                                {% elif project.status == 'completed' %}Завершен
+                                {% else %}Отменен{% endif %}
+                            </span>
+                        </td>
+                        <td class="code-font">{{ project.category }}</td>
+                        <td class="text-muted code-font">{{ project.created_at.strftime('%d.%m.%Y') }}</td>
+                        <td>
+                            {% if project.freelancer %}
+                            <span class="code-font">{{ project.freelancer.username }}</span>
+                            {% else %}
+                            <span class="text-muted code-font">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('project_detail', project_id=project.id) }}" 
+                                   class="btn btn-outline-primary" target="_blank">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if project.status in ['open', 'hidden'] %}
+                                    <a href="{{ url_for('admin_toggle_project_status', project_id=project.id) }}" 
+                                       class="btn btn-{% if project.status == 'open' %}warning{% else %}success{% endif %}"
+                                       onclick="return confirm('{% if project.status == 'open' %}Скрыть{% else %}Восстановить{% endif %} проект \"{{ project.title }}\"?')">
+                                        <i class="bi bi-{% if project.status == 'open' %}eye-slash{% else %}eye{% endif %}"></i>
+                                    </a>
+                                {% endif %}
+                                <a href="{{ url_for('admin_delete_project', project_id=project.id) }}" 
+                                   class="btn btn-danger"
+                                   onclick="return confirm('ВНИМАНИЕ! Это удалит проект \"{{ project.title }}\" и все связанные данные. Продолжить?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-briefcase display-4 mb-3"></i>
+            <h3>Проекты не найдены</h3>
+            <p class="code-font">Попробуйте изменить параметры поиска</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.7rem;
+}
+
+.table-warning {
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.btn-group .btn.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+}
+</style>
+{% endblock %}
