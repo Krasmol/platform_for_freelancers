@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="col-lg-10">
         <div class="card border-primary">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,22 +14,70 @@
                         <a href="{{ url_for('mark_all_notifications_read') }}" class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-check-all me-2"></i>Прочитать все
                         </a>
+                        <button type="button" class="btn btn-outline-danger btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-trash me-2"></i>Удалить
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('delete_read_notifications') }}"
+                                   onclick="return confirm('Удалить все прочитанные уведомления?')">
+                                    <i class="bi bi-check-circle me-2"></i>Прочитанные
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('delete_all_notifications') }}"
+                                   onclick="return confirm('Удалить ВСЕ уведомления? Это действие нельзя отменить.')">
+                                    <i class="bi bi-trash me-2"></i>Все уведомления
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                     {% endif %}
                 </div>
+
+                <!-- Статистика -->
+                {% if notifications %}
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-dark text-center">
+                            <div class="card-body py-3">
+                                <h5 class="text-primary mb-1 text-glow">{{ notifications|length }}</h5>
+                                <small class="text-muted code-font">Всего</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-dark text-center">
+                            <div class="card-body py-3">
+                                <h5 class="text-warning mb-1 text-glow">{{ notifications|selectattr('is_read', 'equalto', false)|list|length }}</h5>
+                                <small class="text-muted code-font">Непрочитанных</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-dark text-center">
+                            <div class="card-body py-3">
+                                <h5 class="text-success mb-1 text-glow">{{ notifications|selectattr('is_read', 'equalto', true)|list|length }}</h5>
+                                <small class="text-muted code-font">Прочитанных</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- Список уведомлений -->
                 <div class="notifications-list">
                     {% if notifications %}
                         {% for notification in notifications %}
-                        <div class="notification-item card mb-3 border-start border-{{ get_notification_color(notification.notification_type) }} border-4 {% if not notification.is_read %}notification-unread glow{% endif %}">
+                        <div class="notification-item card mb-3 border-start border-{{ get_notification_color(notification.notification_type) }} border-4 {% if not notification.is_read %}notification-unread glow{% endif %}"
+                             data-notification-id="{{ notification.id }}">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center">
+                                    <div class="d-flex align-items-center flex-grow-1">
                                         <div class="notification-icon bg-{{ get_notification_color(notification.notification_type) }} text-white rounded-circle p-2 me-3">
                                             <i class="bi {{ get_notification_icon(notification.notification_type) }}"></i>
                                         </div>
-                                        <div>
+                                        <div class="flex-grow-1">
                                             <h6 class="fw-bold mb-1 code-font">{{ notification.title }}</h6>
                                             <p class="text-muted mb-1">{{ notification.message }}</p>
                                             <small class="text-muted code-font">
@@ -37,14 +85,47 @@
                                             </small>
                                         </div>
                                     </div>
-                                    {% if not notification.is_read %}
-                                    <span class="badge bg-primary code-font">NEW</span>
-                                    {% endif %}
+                                    <div class="btn-group ms-3">
+                                        {% if not notification.is_read %}
+                                        <a href="{{ url_for('mark_notification_read', notification_id=notification.id) }}"
+                                           class="btn btn-outline-primary btn-sm"
+                                           title="Отметить прочитанным">
+                                            <i class="bi bi-check"></i>
+                                        </a>
+                                        {% endif %}
+                                        <a href="{{ url_for('delete_notification', notification_id=notification.id) }}"
+                                           class="btn btn-outline-danger btn-sm"
+                                           title="Удалить уведомление"
+                                           onclick="return confirm('Удалить это уведомление?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
                                 </div>
+
+                                <!-- Дополнительные действия для определенных типов уведомлений -->
                                 <div class="mt-3">
-                                    <a href="{{ url_for('mark_notification_read', notification_id=notification.id) }}" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-check me-1"></i>Отметить прочитанным
+                                    {% if notification.notification_type == 'project_response' and notification.related_id %}
+                                    <a href="{{ url_for('project_detail', project_id=notification.related_id) }}"
+                                       class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="bi bi-eye me-1"></i>Посмотреть проект
                                     </a>
+                                    <a href="{{ url_for('chat_list') }}" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-chat me-1"></i>Перейти в чаты
+                                    </a>
+                                    {% elif notification.notification_type == 'message' and notification.related_id %}
+                                    <a href="{{ url_for('chat_list', user_id=notification.related_id) }}"
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-chat me-1"></i>Ответить
+                                    </a>
+                                    {% elif notification.notification_type == 'project_accepted' and notification.related_id %}
+                                    <a href="{{ url_for('project_detail', project_id=notification.related_id) }}"
+                                       class="btn btn-outline-success btn-sm me-2">
+                                        <i class="bi bi-briefcase me-1"></i>Перейти к проекту
+                                    </a>
+                                    <a href="{{ url_for('chat_list') }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-chat me-1"></i>Обсудить детали
+                                    </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -57,6 +138,28 @@
                         </div>
                     {% endif %}
                 </div>
+
+                <!-- Пагинация или информация -->
+                {% if notifications %}
+                <div class="mt-4 pt-3 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted code-font">
+                                Показано {{ notifications|length }} уведомлений
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="btn-group">
+                                <a href="{{ url_for('delete_read_notifications') }}"
+                                   class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Удалить все прочитанные уведомления?')">
+                                    <i class="bi bi-trash me-1"></i>Очистить прочитанные
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -96,5 +199,70 @@
 .bg-info { background: var(--info) !important; }
 .bg-success { background: var(--success) !important; }
 .bg-warning { background: var(--warning) !important; }
+
+.card.bg-dark {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color);
+}
 </style>
+
+<script>
+// Автоматическое скрытие уведомления после отметки прочитанным
+function markAsReadAndHide(notificationId) {
+    fetch(`/notifications/read/${notificationId}`)
+        .then(response => {
+            if (response.ok) {
+                const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (notificationElement) {
+                    notificationElement.classList.remove('notification-unread', 'glow');
+                    const readBtn = notificationElement.querySelector('a[href*="/notifications/read/"]');
+                    if (readBtn) {
+                        readBtn.remove();
+                    }
+                }
+            }
+        });
+}
+
+// Удаление уведомления с анимацией
+function deleteNotification(notificationId) {
+    if (confirm('Удалить это уведомление?')) {
+        fetch(`/notifications/delete/${notificationId}`)
+            .then(response => {
+                if (response.ok) {
+                    const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                    if (notificationElement) {
+                        notificationElement.style.opacity = '0';
+                        notificationElement.style.transform = 'translateX(100px)';
+                        setTimeout(() => {
+                            notificationElement.remove();
+                            // Обновляем счетчики если нужно
+                            updateNotificationCounters();
+                        }, 300);
+                    }
+                }
+            });
+    }
+}
+
+function updateNotificationCounters() {
+    // Можно добавить обновление счетчиков в реальном времени
+    const notifications = document.querySelectorAll('.notification-item');
+    if (notifications.length === 0) {
+        location.reload(); // Перезагружаем если уведомлений не осталось
+    }
+}
+
+// Добавляем обработчики для кнопок
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('a[href*="/notifications/delete/"]');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const notificationId = this.getAttribute('href').split('/').pop();
+            deleteNotification(notificationId);
+        });
+    });
+});
+</script>
 {% endblock %}
