@@ -3,26 +3,26 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body p-5">
                 <div class="text-center mb-5">
                     <div class="feature-icon mx-auto">
                         <i class="bi bi-headset"></i>
                     </div>
-                    <h2 class="fw-bold mt-3">Создание обращения в поддержку</h2>
+                    <h2 class="fw-bold mt-3 text-glow">Создание обращения в поддержку</h2>
                     <p class="text-muted">Опишите вашу проблему и мы поможем её решить</p>
                 </div>
 
                 <form method="POST">
                     <div class="mb-4">
-                        <label for="subject" class="form-label fw-bold">Тема обращения</label>
+                        <label for="subject" class="form-label fw-bold code-font">Тема обращения</label>
                         <input type="text" class="form-control" id="subject" name="subject"
                                placeholder="Кратко опишите проблему" required>
                     </div>
 
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <label for="category" class="form-label fw-bold">Категория</label>
+                            <label for="category" class="form-label fw-bold code-font">Категория</label>
                             <select class="form-select" id="category" name="category" required>
                                 <option value="">Выберите категорию</option>
                                 <option value="Техническая проблема">Техническая проблема</option>
@@ -34,7 +34,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="priority" class="form-label fw-bold">Приоритет</label>
+                            <label for="priority" class="form-label fw-bold code-font">Приоритет</label>
                             <select class="form-select" id="priority" name="priority">
                                 <option value="low">🔵 Низкий</option>
                                 <option value="medium" selected>🟡 Средний</option>
@@ -45,7 +45,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="description" class="form-label fw-bold">Подробное описание</label>
+                        <label for="description" class="form-label fw-bold code-font">Подробное описание</label>
                         <textarea class="form-control" id="description" name="description" rows="8"
                                   placeholder="Опишите проблему максимально подробно. Укажите шаги для воспроизведения, если это техническая проблема..." required></textarea>
                     </div>
@@ -54,7 +54,7 @@
                         <a href="{{ url_for('support') }}" class="btn btn-outline-secondary me-md-2 px-4">
                             <i class="bi bi-arrow-left me-2"></i>Отмена
                         </a>
-                        <button type="submit" class="btn btn-success px-4">
+                        <button type="submit" class="btn btn-success px-4 glow">
                             <i class="bi bi-send me-2"></i>Отправить обращение
                         </button>
                     </div>
@@ -63,9 +63,9 @@
         </div>
 
         <!-- Советы -->
-        <div class="card mt-4">
+        <div class="card mt-4 bg-dark">
             <div class="card-body">
-                <h6 class="fw-bold mb-3">
+                <h6 class="fw-bold mb-3 code-font">
                     <i class="bi bi-lightbulb text-warning me-2"></i>Советы для быстрого решения
                 </h6>
                 <ul class="list-unstyled">
@@ -78,4 +78,11 @@
         </div>
     </div>
 </div>
+
+<style>
+.card.bg-dark {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color);
+}
+</style>
 {% endblock %}
