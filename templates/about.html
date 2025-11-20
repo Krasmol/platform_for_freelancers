@@ -1,1 +1,190 @@
+{% extends "base.html" %}
 
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Заголовок -->
+        <div class="text-center mb-5">
+            <div class="feature-icon mx-auto">
+                <i class="bi bi-info-circle"></i>
+            </div>
+            <h1 class="fw-bold mt-3 text-glow">О проекте FreelanceHub</h1>
+            <p class="lead text-muted">Современная платформа для соединения талантливых фрилансеров и заказчиков</p>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="card mb-4 border-primary">
+            <div class="card-body p-5">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="fw-bold mb-4 text-glow">🎯 Наша миссия</h3>
+                        <p class="mb-4 text-muted">Создать удобную, безопасную и эффективную среду для сотрудничества между фрилансерами и заказчиками. Мы стремимся сделать процесс поиска работы и исполнителей максимально простым и прозрачным.</p>
+
+                        <h3 class="fw-bold mb-4 text-glow">🚀 Что мы предлагаем</h3>
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong class="code-font">Для фрилансеров:</strong> Находите интересные проекты, развивайте навыки, building портфолио
+                            </li>
+                            <li class="mb-3">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong class="code-font">Для заказчиков:</strong> Находите проверенных исполнителей, экономьте время на поиске, получайте качественные результаты
+                            </li>
+                            <li class="mb-3">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <strong class="code-font">Для всех:</strong> Прозрачное общение, безопасные сделки, круглосуточная поддержка
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 class="fw-bold mb-4 text-glow">🛠 Технологии</h3>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="card text-center h-100 bg-dark">
+                                    <div class="card-body">
+                                        <i class="bi bi-server display-6 text-primary mb-3"></i>
+                                        <h6 class="code-font">Backend</h6>
+                                        <small class="text-muted code-font">Flask, SQLAlchemy</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="card text-center h-100 bg-dark">
+                                    <div class="card-body">
+                                        <i class="bi bi-layout-wtf display-6 text-success mb-3"></i>
+                                        <h6 class="code-font">Frontend</h6>
+                                        <small class="text-muted code-font">Bootstrap 5</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="card text-center h-100 bg-dark">
+                                    <div class="card-body">
+                                        <i class="bi bi-database display-6 text-warning mb-3"></i>
+                                        <h6 class="code-font">База данных</h6>
+                                        <small class="text-muted code-font">SQLite</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="card text-center h-100 bg-dark">
+                                    <div class="card-body">
+                                        <i class="bi bi-shield-check display-6 text-info mb-3"></i>
+                                        <h6 class="code-font">Безопасность</h6>
+                                        <small class="text-muted code-font">Flask-Login</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div class="row mb-5">
+            <div class="col-md-3 mb-3">
+                <div class="stats-card">
+                    <i class="bi bi-people display-6 mb-3"></i>
+                    <h3 class="text-glow">500+</h3>
+                    <p class="mb-0 code-font">Фрилансеров</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stats-card">
+                    <i class="bi bi-briefcase display-6 mb-3"></i>
+                    <h3 class="text-glow">1,200+</h3>
+                    <p class="mb-0 code-font">Проектов</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stats-card">
+                    <i class="bi bi-chat-dots display-6 mb-3"></i>
+                    <h3 class="text-glow">3,500+</h3>
+                    <p class="mb-0 code-font">Сообщений</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stats-card">
+                    <i class="bi bi-star display-6 mb-3"></i>
+                    <h3 class="text-glow">4.9/5</h3>
+                    <p class="mb-0 code-font">Средний рейтинг</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Команда -->
+        <div class="card border-primary">
+            <div class="card-body p-5">
+                <h3 class="fw-bold text-center mb-5 text-glow">👨‍💻 Команда разработки</h3>
+                <div class="row justify-content-center">
+                    <div class="col-md-8 text-center">
+                        <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                            {{ current_user.username[0] if current_user.is_authenticated else 'K' }}
+                        </div>
+                        <h4 class="fw-bold mb-2 text-glow">Krasmol</h4>
+                        <p class="text-muted mb-3 code-font">Full-Stack Developer</p>
+                        <p class="mb-4 text-muted">Разработчик этого проекта. Создал платформу с нуля, используя современные технологии и лучшие практики веб-разработки.</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="https://github.com/Krasmol" class="btn btn-outline-dark" target="_blank">
+                                <i class="bi bi-github me-2"></i>GitHub
+                            </a>
+                            <a href="mailto:sherlockfoxlie@gmail.com" class="btn btn-outline-primary">
+                                <i class="bi bi-envelope me-2"></i>Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Призыв к действию -->
+        <div class="card bg-dark mt-4 border-primary">
+            <div class="card-body text-center py-5">
+                <h3 class="mb-3 text-glow">Готовы начать?</h3>
+                <p class="text-muted mb-4 code-font">Присоединяйтесь к нашему сообществу уже сегодня</p>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-3 glow">
+                    <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
+                </a>
+                {% endif %}
+                <a href="{{ url_for('projects') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-search me-2"></i>Смотреть проекты
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stats-card {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+
+.card.bg-dark {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color);
+}
+</style>
+{% endblock %}
