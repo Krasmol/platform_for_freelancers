@@ -4,14 +4,14 @@
 <div class="row">
     <!-- Список чатов -->
     <div class="col-md-4">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0">
+                    <h4 class="fw-bold mb-0 text-glow">
                         <i class="bi bi-chat-dots text-primary me-2"></i>Сообщения
                     </h4>
                     <div>
-                        <span class="badge bg-primary">{{ chats|length }}</span>
+                        <span class="badge bg-primary code-font">{{ chats|length }}</span>
                         <button id="refresh-btn" class="btn btn-sm btn-outline-secondary ms-2" title="Обновить">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
@@ -21,10 +21,10 @@
                 <!-- Поиск -->
                 <div class="mb-3">
                     <div class="input-group">
-                        <span class="input-group-text bg-light">
+                        <span class="input-group-text bg-dark border-end-0">
                             <i class="bi bi-search"></i>
                         </span>
-                        <input type="text" class="form-control" placeholder="Поиск диалогов..." id="chatSearch">
+                        <input type="text" class="form-control border-start-0" placeholder="Поиск диалогов..." id="chatSearch">
                     </div>
                 </div>
 
@@ -32,7 +32,7 @@
                 <div id="chats-container" class="chat-list">
                     {% if chats %}
                         {% for chat in chats %}
-                        <div class="chat-item card mb-2 {% if selected_user and selected_user.id == chat.other_user.id %}active{% endif %}"
+                        <div class="chat-item card mb-2 {% if selected_user and selected_user.id == chat.other_user.id %}active border-primary{% else %}border-dark{% endif %}"
                              data-user-id="{{ chat.other_user.id }}"
                              onclick="window.location.href='{{ url_for('chat_list', user_id=chat.other_user.id) }}'">
                             <div class="card-body py-3">
@@ -42,24 +42,24 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <h6 class="fw-bold mb-1">{{ chat.other_user.username }}</h6>
+                                            <h6 class="fw-bold mb-1 code-font">{{ chat.other_user.username }}</h6>
                                             {% if chat.last_message %}
-                                            <small class="text-muted">{{ chat.last_message.created_at.strftime('%H:%M') }}</small>
+                                            <small class="text-muted code-font">{{ chat.last_message.created_at.strftime('%H:%M') }}</small>
                                             {% endif %}
                                         </div>
                                         {% if chat.last_message %}
-                                        <p class="text-muted mb-0 small text-truncate">
+                                        <p class="text-muted mb-0 small text-truncate code-font">
                                             {% if chat.last_message.sender_id == current_user.id %}
-                                            <strong>Вы:</strong>
+                                            <strong class="text-primary">Вы:</strong>
                                             {% endif %}
                                             {{ chat.last_message.content[:50] }}{% if chat.last_message.content|length > 50 %}...{% endif %}
                                         </p>
                                         {% else %}
-                                        <p class="text-muted mb-0 small">Нет сообщений</p>
+                                        <p class="text-muted mb-0 small code-font">Нет сообщений</p>
                                         {% endif %}
                                     </div>
                                     {% if chat.unread_count > 0 %}
-                                    <span class="badge bg-primary rounded-pill ms-2">{{ chat.unread_count }}</span>
+                                    <span class="badge bg-primary rounded-pill ms-2 code-font">{{ chat.unread_count }}</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -69,8 +69,8 @@
                         <div class="text-center py-5">
                             <i class="bi bi-chat-quote display-4 text-muted mb-3"></i>
                             <p class="text-muted">У вас пока нет сообщений</p>
-                            <p class="text-muted small">Начните общение, откликнувшись на проект</p>
-                            <a href="{{ url_for('projects') }}" class="btn btn-primary mt-2">
+                            <p class="text-muted small code-font">Начните общение, откликнувшись на проект</p>
+                            <a href="{{ url_for('projects') }}" class="btn btn-primary mt-2 glow">
                                 <i class="bi bi-search me-2"></i>Найти проекты
                             </a>
                         </div>
@@ -83,7 +83,7 @@
     <!-- Окно чата -->
     <div class="col-md-8">
         {% if selected_user %}
-            <div class="card h-100">
+            <div class="card h-100 border-primary">
                 <div class="card-body d-flex flex-column">
                     <!-- Заголовок чата -->
                     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
@@ -95,9 +95,9 @@
                                 {{ selected_user.username[0] }}
                             </div>
                             <div>
-                                <h5 class="fw-bold mb-1">{{ selected_user.username }}</h5>
+                                <h5 class="fw-bold mb-1 code-font">{{ selected_user.username }}</h5>
                                 {% if selected_user.profile %}
-                                <small class="text-muted">{{ selected_user.profile.title }}</small>
+                                <small class="text-muted code-font">{{ selected_user.profile.title }}</small>
                                 {% endif %}
                             </div>
                         </div>
@@ -105,7 +105,7 @@
                             <button id="refresh-chat-btn" class="btn btn-outline-secondary btn-sm" title="Обновить чат">
                                 <i class="bi bi-arrow-clockwise"></i>
                             </button>
-                            <a href="{{ url_for('view_profile') }}" class="btn btn-outline-secondary btn-sm">
+                            <a href="{{ url_for('user_profile', user_id=selected_user.id) }}" class="btn btn-outline-secondary btn-sm">
                                 <i class="bi bi-person"></i>
                             </a>
                         </div>
@@ -121,9 +121,9 @@
                                     {{ selected_user.username[0] }}
                                 </div>
                                 {% endif %}
-                                <div class="message-content {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %} rounded p-3">
+                                <div class="message-content {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-dark text-light{% endif %} rounded p-3">
                                     <p class="mb-1">{{ message.content }}</p>
-                                    <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
+                                    <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %} code-font">
                                         {{ message.created_at.strftime('%H:%M') }}
                                     </small>
                                 </div>
@@ -141,8 +141,8 @@
                     <div class="border-top pt-3">
                         <form id="message-form" data-receiver-id="{{ selected_user.id }}">
                             <div class="input-group">
-                                <input type="text" id="message-input" class="form-control" placeholder="Введите сообщение..." required>
-                                <button type="submit" class="btn btn-primary">
+                                <input type="text" id="message-input" class="form-control border-end-0" placeholder="Введите сообщение..." required>
+                                <button type="submit" class="btn btn-primary border-start-0">
                                     <i class="bi bi-send"></i>
                                 </button>
                             </div>
@@ -151,14 +151,14 @@
                 </div>
             </div>
         {% else %}
-            <div class="card h-100">
+            <div class="card h-100 border-dashed">
                 <div class="card-body d-flex align-items-center justify-content-center">
                     <div class="text-center text-muted">
                         <i class="bi bi-chat-quote display-1 mb-3"></i>
-                        <h4>Выберите диалог</h4>
-                        <p>Выберите чат из списка слева чтобы начать общение</p>
+                        <h4 class="text-glow">Выберите диалог</h4>
+                        <p class="code-font">Выберите чат из списка слева чтобы начать общение</p>
                         {% if not chats %}
-                        <a href="{{ url_for('projects') }}" class="btn btn-primary mt-3">
+                        <a href="{{ url_for('projects') }}" class="btn btn-primary mt-3 glow">
                             <i class="bi bi-search me-2"></i>Найти проекты для отклика
                         </a>
                         {% endif %}
@@ -173,37 +173,43 @@
 .chat-item {
     cursor: pointer;
     transition: all 0.2s;
+    background: var(--bg-card);
 }
 
 .chat-item:hover {
-    background-color: #f8f9fa;
+    background: var(--bg-hover);
+    transform: translateX(5px);
 }
 
 .chat-item.active {
-    background-color: #e3f2fd;
-    border-color: #2196f3;
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary) !important;
 }
 
 .chat-messages {
     min-height: 400px;
     max-height: 500px;
     overflow-y: auto;
-    border: 1px solid #e9ecef;
-    border-radius: 0.375rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
     padding: 1rem;
+    background: var(--bg-primary);
 }
 
 .message-content {
     max-width: 70%;
     word-wrap: break-word;
+    border: 1px solid var(--border-color);
 }
 
 .message-incoming .message-content {
     border-bottom-left-radius: 0;
+    background: var(--bg-card) !important;
 }
 
 .message-outgoing .message-content {
     border-bottom-right-radius: 0;
+    background: linear-gradient(45deg, var(--accent-primary), #4f46e5) !important;
 }
 
 #refresh-btn.rotating {
@@ -213,6 +219,18 @@
 @keyframes rotate {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+.border-dashed {
+    border: 2px dashed var(--border-color) !important;
+}
+
+.form-control.border-end-0 {
+    border-right: none;
+}
+
+.btn.border-start-0 {
+    border-left: none;
 }
 </style>
 
@@ -226,14 +244,13 @@ function checkForNewMessages() {
         .then(response => response.json())
         .then(data => {
             if (data.has_new_messages || data.has_new_notifications) {
-                // Если есть новые сообщения, обновляем страницу
-                console.log('Обнаружены новые сообщения, обновляем...');
+                console.log('🔄 Обнаружены новые сообщения, обновляем...');
                 window.location.reload();
             }
             lastCheckTime = data.current_time;
         })
         .catch(error => {
-            console.error('Ошибка проверки сообщений:', error);
+            console.error('❌ Ошибка проверки сообщений:', error);
         });
 }
 
@@ -305,7 +322,7 @@ if (document.getElementById('message-form')) {
                                 <div class="d-flex justify-content-end">
                                     <div class="message-content bg-primary text-white rounded p-3">
                                         <p class="mb-1">${content}</p>
-                                        <small class="text-white-50">${data.created_at}</small>
+                                        <small class="text-white-50 code-font">${data.created_at}</small>
                                     </div>
                                     <div class="user-avatar ms-2" style="width: 35px; height: 35px; font-size: 0.8rem;">
                                         {{ current_user.username[0] }}
@@ -322,12 +339,12 @@ if (document.getElementById('message-form')) {
                         // Обновляем время последней проверки
                         lastCheckTime = {{ time.time() }};
                     } else {
-                        alert('Ошибка отправки сообщения: ' + data.message);
+                        alert('❌ Ошибка отправки сообщения: ' + data.message);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Ошибка отправки сообщения');
+                    alert('❌ Ошибка отправки сообщения');
                 })
                 .finally(() => {
                     // Разблокируем форму
